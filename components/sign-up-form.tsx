@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { ensureProfileExists } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -40,7 +41,7 @@ export function SignUpForm({
     }
 
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -48,6 +49,13 @@ export function SignUpForm({
         },
       });
       if (error) throw error;
+
+      // Create profile for the new user (Issue 1: profiles自動作成)
+      // Server Actionを直接呼び出し（API Route不要）
+      if (data.user) {
+        await ensureProfileExists();
+      }
+
       router.push("/auth/sign-up-success");
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
