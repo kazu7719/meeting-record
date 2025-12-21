@@ -19,10 +19,13 @@ SOLID 原則、および TDD（テスト駆動開発）に従い、保守性が�
 ### Step 1: タスク受付と準備
 
 1. ユーザーから **GitHub Issue 番号**を受け付けたらフロー開始です。`/create-gh-branch` カスタムコマンドを実行し、Issue の取得とブランチを作成します。
-2. **[REQUIREMENTS.md](./REQUIREMENTS.md) を参照し、以下を確認します**：
+2. **[REQUIREMENTS.md](./REQUIREMENTS.md) と [docs/design.md](./docs/design.md) を参照し、以下を確認します**：
    - 該当 Issue が実現する機能が、プロジェクトゴール（WHO/WHAT/HOW）のどこに位置するか
    - UI/UX方針・データ設計の基本方針との整合性
    - 成功基準（実務的/技術的）を満たせる実装か
+   - **機能仕様（機能ID、仕様詳細、受け入れ条件）との整合性**
+   - **テーブル定義・ER図・データ構造との整合性**
+   - **AI機能の場合、共通仕様（レート制限、キャッシュ、創作禁止、根拠必須等）の遵守**
 3. Issue の内容を把握し、関連するコードを調査します。調査時には SerenaMCP の解析結果を利用してください。
 
 ### Step 2: 実装計画の策定と承認
@@ -130,6 +133,27 @@ SOLID 原則、および TDD（テスト駆動開発）に従い、保守性が�
 
 ---
 
+## 機能一覧
+
+本プロジェクトは以下の10機能で構成されます。
+
+| 機能ID | 機能名 | Issue | ゲスト | ログイン後 |
+|--------|--------|-------|--------|-----------|
+| F-001 | 認証 | Issue 1 | - | ○ |
+| F-002 | 部門共有・RLS | Issue 2 | - | ○ |
+| F-003 | raw_text 入力 | Issue 5 | ○ | ○ |
+| F-004 | AI要約 | Issue 7 | ○（表示のみ） | ○（保存可） |
+| F-005 | AIアクション抽出 | Issue 8 | ○（表示のみ） | ○（保存可） |
+| F-006 | AI QA | Issue 9 | ○（表示のみ） | ○ |
+| F-007 | 議事録保存 | Issue 5 | - | ○ |
+| F-008 | 議事録一覧・詳細 | Issue 6 | - | ○ |
+| F-009 | 議事録検索 | Issue 10 | - | ○ |
+| F-010 | 音声アップロード | Issue 4 | - | ○ |
+
+各機能の詳細仕様・受け入れ条件は **[docs/design.md](./docs/design.md)** を参照してください。
+
+---
+
 ## 技術スタック（厳守）
 
 ### フロントエンド
@@ -234,21 +258,51 @@ SOLID 原則、および TDD（テスト駆動開発）に従い、保守性が�
 - Supabase Auth（Email / Password）
 - Confirm Email は必須にしない（デモ用途）
 - 未ログインでも AI 実行可能
-- profiles テーブルで department_id を管理（1人=1部門）
+- **profiles 自動作成**:
+  - ログイン直後に profiles レコードが存在しなければ作成
+  - profiles.id = auth.uid() に一致させる
+  - department_id を必ずセット（1人=1部門）
 
 ### RLS（Issue 2）
 
-- 閲覧：同一部門のみ
-- 編集・削除：作成者のみ
-- 対象：minutes / action_items / audio_files / ai_jobs
-- Storage（音声）も部門境界を守る
+#### 基本方針
+- **DBレベルで権限を担保**（フロント制御に依存しない）
+- **department_id偽装防止**: profilesから導出、フロント入力を信用しない
+
+#### 権限仕様
+**minutes**
+- SELECT: 自分のdepartment_idと一致するもののみ
+- INSERT: owner_id=auth.uid() かつ department_id=profiles.department_id
+- UPDATE/DELETE: owner_id=auth.uid()のみ
+
+**action_items / audio_files / ai_jobs**
+- SELECT: 親minutesが自部門のもののみ
+- INSERT/UPDATE/DELETE: 親minutesがowner_id=auth.uid()のもののみ
+
+**Storage（音声）**
+- パス: `{department_id}/{minute_id}/{timestamp}_{filename}`
+- 読み取り: 同部門のみ
+- 書き込み: owner_id=auth.uid()のminuteのみ
+
+具体的なRLSポリシー（SQL）は **[docs/design.md](./docs/design.md)** を参照してください。
 
 ### データモデル（Issue 3）
 
-- profiles / minutes / action_items / audio_files / ai_jobs
-- raw_text NOT NULL
-- action_items.evidence NOT NULL
-- FK + ON DELETE CASCADE 必須
+#### テーブル一覧
+- **profiles**: ユーザー・部門情報（1人=1部門）
+- **minutes**: 議事録（raw_textが正データ）
+- **action_items**: アクションプラン（evidence必須）
+- **audio_files**: 音声ファイルメタデータ
+- **ai_jobs**: AI実行履歴
+
+#### 重要な制約（厳守）
+- **raw_text NOT NULL**: 正データは必須
+- **action_items.evidence NOT NULL**: 根拠引用は必須（創作防止）
+- **NULL = 不明・未言及**: 推測で埋めない（assignee_name, due_atなど）
+- **FK + ON DELETE CASCADE**: 親削除時に子も自動削除
+- **department_id偽装防止**: INSERT時にprofilesから導出（RLSで担保）
+
+詳細なテーブル定義・ER図は **[docs/design.md](./docs/design.md)** を参照してください。
 
 ### 音声アップロード（Issue 4）
 
@@ -266,9 +320,21 @@ SOLID 原則、および TDD（テスト駆動開発）に従い、保守性が�
 
 ### UI（Issue 6）
 
-- 「AI はボタンで実行」を明示
-- ゲスト：入力 → AI 体験 → 保存ボタン（ログイン誘導）
-- ログイン後：一覧 / 詳細 / 保存 / 検索 / 音声
+#### ゲストトップ画面（最重要）
+- **初期状態**: サンプル議事録（開発進捗定例）が入っている
+- **サンプル操作**: 「サンプル議事録を挿入」ボタン、「クリア」ボタン
+- **AI実行**: 「要約を生成」「アクションを抽出」「質問する（QA）」ボタンを明示
+- **誤解防止の文言（必須）**:
+  - 「AI機能はボタンを押すと実行されます（自動では実行されません）」
+  - 「このアプリは入力テキスト（raw_text）を元にAI処理します」
+  - 「保存・共有・検索・音声アップロードはログイン後に利用できます」
+  - 「AIは入力テキストにない内容を創作しません」
+- **保存ボタン**: 未ログイン時はログイン誘導
+
+#### ログイン後
+- 一覧 / 詳細 / 保存 / 検索 / 音声アップロード
+
+詳細な画面仕様は **[docs/design.md](./docs/design.md)** の F-008 を参照してください。
 
 ### 検索（Issue 10）
 
@@ -289,16 +355,42 @@ SOLID 原則、および TDD（テスト駆動開発）に従い、保守性が�
 
 ## AI 共通仕様（Issue 7/8/9）
 
-- Gemini API は必ずサーバー側で実行
-- API キーは環境変数
-- guest_id cookie を発行し IP と併用して制限
-- raw_text 最大 30,000 文字
-- question 最大 800 文字
-- キャッシュキー
-  - 要約/抽出：sha256(raw_text)
-  - QA：sha256(raw_text + question)
-- TTL：6〜24 時間
-- エラー時は内部情報を返さない
+### サーバー側実行（厳守）
+- Gemini API は**必ずサーバー側で実行**
+- APIキーは環境変数で管理
+- クライアントにキーを**絶対に**露出させない
+
+### 乱用/コスト対策（必須）
+
+#### レート制限
+- guest_id cookie（初回アクセス時に発行） + IP で日次回数制限（環境変数: `AI_RATE_LIMIT_PER_DAY`）
+
+#### 入力文字数制限
+- raw_text: 最大 30,000 文字（`AI_RAW_TEXT_MAX_CHARS`）
+- question: 最大 800 文字（`AI_QUESTION_MAX_CHARS`）
+
+#### 連打防止
+- 短時間（10〜30秒）以内の連続実行を拒否
+
+#### キャッシュ（必須）
+- **要約/抽出**: key=`sha256(raw_text)`, TTL=6〜24時間
+- **QA**: key=`sha256(raw_text + question)`, TTL=6〜24時間
+- 環境変数: `AI_CACHE_TTL_SECONDS`
+
+### エラーハンドリング
+- エラー時は**内部情報を返さない**
+- ユーザーには汎用メッセージを表示（例: 「エラーが発生しました。しばらく経ってから再度お試しください」）
+- **具体的なエラー処理**:
+  - **レート制限超過**: 制限超過メッセージを表示
+  - **入力文字数超過**: 文字数上限の案内を表示
+  - **JSONパースエラー（アクション抽出）**: エラー表示し、再生成を促す（内部情報は見せない）
+
+### 創作禁止・根拠必須（厳守）
+- **要約**: raw_textにない内容は出さない
+- **アクション抽出**: evidence（根拠引用）必須、不明な担当者・期限はnull
+- **QA**: 根拠がない場合は必ず「記載がありません」、外部知識を混ぜない
+
+詳細な仕様は **[docs/design.md](./docs/design.md)** を参照してください。
 
 ---
 
@@ -308,14 +400,20 @@ SOLID 原則、および TDD（テスト駆動開発）に従い、保守性が�
 
 - 入力：raw_text
 - 出力：summary（text）
-- 創作禁止
+- **出力品質要件**:
+  - 読みやすさ優先（箇条書き主体）
+  - raw_textに存在する範囲で以下を含める:
+    - 決定事項（何が決まったか）
+    - 主要論点（何が議論されたか）
+    - 次アクションの方向性（担当者・期限はIssue 8で確定）
+- 創作禁止（raw_textにない内容は出さない）
 - ゲスト：表示のみ
 - ログイン後：minutes.summary に保存
 
 ### Issue 8：アクション抽出
 
 - 入力：raw_text
-- 出力形式（固定）：
+- 出力形式（固定）：**必ずJSONとしてパース可能であること（必須）**
   ```json
   [
     {
@@ -327,8 +425,13 @@ SOLID 原則、および TDD（テスト駆動開発）に従い、保守性が�
     }
   ]
   ```
-- evidence 必須
-- due_at 推測禁止
+- **JSON要件（厳守）**:
+  - JSON配列（必ず配列）
+  - 各要素は以下キーを必ず持つ（キー欠落は失敗扱い）
+  - パース不能・キー欠落は失敗扱い
+- evidence 必須（根拠引用、創作防止）
+- due_at 推測禁止（言及がなければ null）
+- assignee_name 推測禁止（言及がなければ null）
 - ゲスト：表示のみ
 - ログイン後：action_items 保存
 
@@ -365,6 +468,19 @@ SOLID 原則、および TDD（テスト駆動開発）に従い、保守性が�
 
 ---
 
+## 用語集
+
+| 用語 | 説明 |
+|------|------|
+| **raw_text** | 会議の文字起こしテキスト（正データ）。AI で改変禁止。 |
+| **正データ** | AI で改変禁止のデータ（raw_text）。 |
+| **派生データ** | AI で生成され、再生成可能なデータ（summary、action_items）。 |
+| **evidence** | AI が生成したアクション等の根拠引用。創作防止のため必須。 |
+| **guest_id** | ゲストユーザーを識別するための cookie（レート制限に使用）。 |
+| **department_id** | 部門ID。RLSの境界。1人=1部門。 |
+| **RLS** | Row Level Security（行レベルセキュリティ）。DBレベルで権限制御。 |
+
+---
 
 ## やらないこと
 
@@ -374,4 +490,16 @@ SOLID 原則、および TDD（テスト駆動開発）に従い、保守性が�
 - QA で外部知識を混ぜる
 - Server Components で 'use client' を不必要に使用する
 - クライアント側で Gemini API を直接呼び出す
+
+---
+
+## 参照ドキュメント
+
+本プロジェクトの仕様は以下のドキュメントで管理されています。
+
+- **[REQUIREMENTS.md](./REQUIREMENTS.md)**: 要件定義書（プロジェクトゴール、ターゲットユーザー、成功基準）
+- **[docs/design.md](./docs/design.md)**: 設計書（機能仕様、テーブル定義、ER図、AI共通仕様、RLS）
+- **[GitHub Issues 1-11](https://github.com/kazu7719/meeting-record/issues)**: 詳細な実装仕様と受け入れ条件
+
+実装時は、必ずこれらのドキュメントを確認してください。
 
