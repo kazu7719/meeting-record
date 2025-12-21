@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+import { ensureProfileExists } from "@/app/auth/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -33,11 +34,18 @@ export function LoginForm({
     setError(null);
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
       if (error) throw error;
+
+      // Ensure profile exists for the user (Issue 1: profiles自動作成)
+      // Server Actionを直接呼び出し（API Route不要）
+      if (data.user) {
+        await ensureProfileExists();
+      }
+
       // Update this route to redirect to an authenticated route. The user already has an active session.
       router.push("/protected");
     } catch (error: unknown) {
