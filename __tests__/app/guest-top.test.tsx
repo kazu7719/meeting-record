@@ -14,6 +14,15 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
+// Mock Supabase client
+jest.mock('@/lib/supabase/client', () => ({
+  createClient: jest.fn(() => ({
+    auth: {
+      getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })),
+    },
+  })),
+}));
+
 describe('ゲストトップ画面（Issue 1: 最小限）', () => {
   it('サンプル議事録エリアが表示される', () => {
     render(<Home />);

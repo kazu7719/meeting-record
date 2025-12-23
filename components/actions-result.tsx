@@ -5,9 +5,11 @@
  * - アクション項目を表形式で表示
  * - evidence（根拠引用）を明示
  * - エラーメッセージを表示
+ * - 保存ボタン表示（ログイン後）
  */
 
 import type { ActionItem } from '@/app/actions/extract-actions';
+import { SaveActionsButton } from './save-actions-button';
 
 interface ActionsResultProps {
   actions: ActionItem[] | null;
@@ -84,6 +86,10 @@ export function ActionsResult({ actions, error }: ActionsResultProps) {
         <p className="text-sm text-gray-600 dark:text-gray-400">
           アクション項目が抽出されませんでした。
         </p>
+      )}
+
+      {actions && actions.length > 0 && !error && (
+        <SaveActionsButton actions={actions} />
       )}
     </div>
   );
