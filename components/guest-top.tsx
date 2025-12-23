@@ -4,9 +4,11 @@ import { useState } from 'react';
 import { SaveButton } from './save-button';
 import { AiControls } from './ai-controls';
 import { SummaryResult } from './summary-result';
+import { ActionsResult } from './actions-result';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { generateSummary } from '@/app/actions/generate-summary';
+import { extractActions, type ActionItem } from '@/app/actions/extract-actions';
 
 const SAMPLE_TEXT =
   '# 開発進捗定例（サンプル）\n\n' +
@@ -32,6 +34,9 @@ export function GuestTop() {
   const [summary, setSummary] = useState<string | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [summaryError, setSummaryError] = useState<string | null>(null);
+  const [actions, setActions] = useState<ActionItem[] | null>(null);
+  const [isExtractingActions, setIsExtractingActions] = useState(false);
+  const [actionsError, setActionsError] = useState<string | null>(null);
 
   const handleInsertSample = () => {
     setRawText(SAMPLE_TEXT);
@@ -58,6 +63,26 @@ export function GuestTop() {
       setSummaryError('エラーが発生しました。しばらく経ってから再度お試しください');
     } finally {
       setIsGeneratingSummary(false);
+    }
+  };
+
+  const handleExtractActions = async () => {
+    setActionsError(null);
+    setIsExtractingActions(true);
+
+    try {
+      const result = await extractActions({ rawText });
+
+      if (result.success && result.actions) {
+        setActions(result.actions);
+      } else {
+        setActionsError(result.error || 'アクション抽出に失敗しました');
+      }
+    } catch (error) {
+      console.error('Action extraction error:', error);
+      setActionsError('エラーが発生しました。しばらく経ってから再度お試しください');
+    } finally {
+      setIsExtractingActions(false);
     }
   };
 
@@ -129,10 +154,14 @@ export function GuestTop() {
         isOverLimit={isOverLimit}
         isGeneratingSummary={isGeneratingSummary}
         onGenerateSummary={handleGenerateSummary}
+        isExtractingActions={isExtractingActions}
+        onExtractActions={handleExtractActions}
       />
 
       {/* AI結果表示エリア */}
       <SummaryResult summary={summary} error={summaryError} />
+
+      <ActionsResult actions={actions} error={actionsError} />
 
       {/* 保存ボタンエリア */}
       <div className="flex justify-end gap-4">

@@ -40,3 +40,40 @@ ${rawText}
 
 【要約】`;
 }
+
+/**
+ * アクション抽出用プロンプトを生成
+ * @param rawText 議事録全文
+ * @returns アクション抽出用プロンプト
+ */
+export function getActionExtractionPrompt(rawText: string): string {
+  return `あなたは会議議事録からアクションプランを抽出する専門家です。以下の会議議事録から、次のアクション項目を抽出してください。
+
+【絶対に守るルール】
+1. 出力は必ずJSON配列形式で返してください（他の説明文は一切不要）
+2. 各アクション項目は以下のキーを必ず持つこと：
+   - task_content: タスク内容（文字列、必須）
+   - assignee_name: 担当者名（文字列 or null）
+   - due_at: 期限（文字列 or null）
+   - note: 補足（文字列 or null）
+   - evidence: 根拠引用（文字列、必須）
+3. evidence は必ず議事録からの直接引用であること（創作禁止）
+4. 担当者や期限が議事録に明記されていない場合は null にすること（推測禁止）
+5. 議事録にアクション項目が存在しない場合は空配列 [] を返すこと
+
+【出力例】
+[
+  {
+    "task_content": "ログイン機能の実装",
+    "assignee_name": "田中",
+    "due_at": null,
+    "note": "UI/UXレビュー後に着手",
+    "evidence": "田中：ログイン機能を今週中に実装します"
+  }
+]
+
+【会議議事録】
+${rawText}
+
+【アクション項目（JSON配列のみ）】`;
+}

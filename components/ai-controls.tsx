@@ -15,6 +15,8 @@ interface AiControlsProps {
   isOverLimit: boolean;
   isGeneratingSummary: boolean;
   onGenerateSummary: () => void;
+  isExtractingActions: boolean;
+  onExtractActions: () => void;
 }
 
 export function AiControls({
@@ -22,6 +24,8 @@ export function AiControls({
   isOverLimit,
   isGeneratingSummary,
   onGenerateSummary,
+  isExtractingActions,
+  onExtractActions,
 }: AiControlsProps) {
   return (
     <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
@@ -37,8 +41,12 @@ export function AiControls({
         >
           {isGeneratingSummary ? '生成中...' : '要約を生成'}
         </Button>
-        <Button variant="default" disabled={!rawText.trim() || isOverLimit}>
-          アクションを抽出
+        <Button
+          variant="default"
+          disabled={!rawText.trim() || isOverLimit || isExtractingActions}
+          onClick={onExtractActions}
+        >
+          {isExtractingActions ? '抽出中...' : 'アクションを抽出'}
         </Button>
         <Button variant="default" disabled={!rawText.trim() || isOverLimit}>
           質問する（QA）
