@@ -2,8 +2,11 @@
 
 import { useState } from 'react';
 import { SaveButton } from './save-button';
+import { AiControls } from './ai-controls';
+import { SummaryResult } from './summary-result';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
+import { generateSummary } from '@/app/actions/generate-summary';
 
 const SAMPLE_TEXT =
   '# 開発進捗定例（サンプル）\n\n' +
@@ -26,6 +29,9 @@ const MAX_CHARS = 30000;
  */
 export function GuestTop() {
   const [rawText, setRawText] = useState(SAMPLE_TEXT);
+  const [summary, setSummary] = useState<string | null>(null);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
+  const [summaryError, setSummaryError] = useState<string | null>(null);
 
   const handleInsertSample = () => {
     setRawText(SAMPLE_TEXT);
@@ -33,6 +39,26 @@ export function GuestTop() {
 
   const handleClear = () => {
     setRawText('');
+  };
+
+  const handleGenerateSummary = async () => {
+    setSummaryError(null);
+    setIsGeneratingSummary(true);
+
+    try {
+      const result = await generateSummary({ rawText });
+
+      if (result.success && result.summary) {
+        setSummary(result.summary);
+      } else {
+        setSummaryError(result.error || '要約生成に失敗しました');
+      }
+    } catch (error) {
+      console.error('Summary generation error:', error);
+      setSummaryError('エラーが発生しました。しばらく経ってから再度お試しください');
+    } finally {
+      setIsGeneratingSummary(false);
+    }
   };
 
   const charCount = rawText.length;
@@ -98,23 +124,15 @@ export function GuestTop() {
       </div>
 
       {/* AI実行ボタンエリア */}
-      <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-        <h3 className="text-lg font-semibold mb-3">AI機能</h3>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-          以下のボタンを押すとAI処理が実行されます（自動では実行されません）
-        </p>
-        <div className="flex flex-wrap gap-3">
-          <Button variant="default" disabled={!rawText.trim() || isOverLimit}>
-            要約を生成
-          </Button>
-          <Button variant="default" disabled={!rawText.trim() || isOverLimit}>
-            アクションを抽出
-          </Button>
-          <Button variant="default" disabled={!rawText.trim() || isOverLimit}>
-            質問する（QA）
-          </Button>
-        </div>
-      </div>
+      <AiControls
+        rawText={rawText}
+        isOverLimit={isOverLimit}
+        isGeneratingSummary={isGeneratingSummary}
+        onGenerateSummary={handleGenerateSummary}
+      />
+
+      {/* AI結果表示エリア */}
+      <SummaryResult summary={summary} error={summaryError} />
 
       {/* 保存ボタンエリア */}
       <div className="flex justify-end gap-4">
