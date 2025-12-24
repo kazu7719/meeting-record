@@ -5,10 +5,12 @@ import { SaveButton } from './save-button';
 import { AiControls } from './ai-controls';
 import { SummaryResult } from './summary-result';
 import { ActionsResult } from './actions-result';
+import { QAResultDisplay } from './qa-result';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { generateSummary } from '@/app/actions/generate-summary';
 import { extractActions, type ActionItem } from '@/app/actions/extract-actions';
+import { executeQA, type QAResult } from '@/app/actions/qa-answer';
 
 const SAMPLE_TEXT =
   '# 開発進捗定例（サンプル）\n\n' +
@@ -22,11 +24,12 @@ const MAX_CHARS = 30000;
 
 /**
  * ゲストトップ画面コンポーネント（Client Component）
- * Issue 5: raw_text登録と保存導線
+ * Issue 5, 7, 8, 9: raw_text登録・AI要約・アクション抽出・QA
  *
  * - サンプル議事録エリア表示
  * - 文字数カウンタ
  * - サンプル操作ボタン（挿入/クリア）
+ * - AI機能（要約・アクション抽出・QA）
  * - 保存ボタン（Client Component）
  */
 export function GuestTop() {
@@ -37,6 +40,10 @@ export function GuestTop() {
   const [actions, setActions] = useState<ActionItem[] | null>(null);
   const [isExtractingActions, setIsExtractingActions] = useState(false);
   const [actionsError, setActionsError] = useState<string | null>(null);
+  const [question, setQuestion] = useState('');
+  const [qaResult, setQaResult] = useState<QAResult | null>(null);
+  const [isExecutingQA, setIsExecutingQA] = useState(false);
+  const [qaError, setQaError] = useState<string | null>(null);
 
   const handleInsertSample = () => {
     setRawText(SAMPLE_TEXT);
@@ -83,6 +90,26 @@ export function GuestTop() {
       setActionsError('エラーが発生しました。しばらく経ってから再度お試しください');
     } finally {
       setIsExtractingActions(false);
+    }
+  };
+
+  const handleExecuteQA = async () => {
+    setQaError(null);
+    setIsExecutingQA(true);
+
+    try {
+      const result = await executeQA({ rawText, question });
+
+      if (result.success && result.result) {
+        setQaResult(result.result);
+      } else {
+        setQaError(result.error || 'QA処理に失敗しました');
+      }
+    } catch (error) {
+      console.error('QA execution error:', error);
+      setQaError('エラーが発生しました。しばらく経ってから再度お試しください');
+    } finally {
+      setIsExecutingQA(false);
     }
   };
 
@@ -156,12 +183,18 @@ export function GuestTop() {
         onGenerateSummary={handleGenerateSummary}
         isExtractingActions={isExtractingActions}
         onExtractActions={handleExtractActions}
+        question={question}
+        onQuestionChange={setQuestion}
+        isExecutingQA={isExecutingQA}
+        onExecuteQA={handleExecuteQA}
       />
 
       {/* AI結果表示エリア */}
       <SummaryResult summary={summary} error={summaryError} />
 
       <ActionsResult actions={actions} error={actionsError} />
+
+      <QAResultDisplay result={qaResult} error={qaError} />
 
       {/* 保存ボタンエリア */}
       <div className="flex justify-end gap-4">
