@@ -1,8 +1,20 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import { SearchForm } from '@/components/search-form';
 
-export default async function MinutesListPage() {
+interface MinutesListPageProps {
+  searchParams?: Promise<{
+    title?: string;
+    dateFrom?: string;
+    dateTo?: string;
+    keyword?: string;
+  }>;
+}
+
+export default async function MinutesListPage({
+  searchParams = Promise.resolve({}),
+}: MinutesListPageProps) {
   const supabase = await createClient();
 
   // Check authentication
@@ -15,11 +27,35 @@ export default async function MinutesListPage() {
     redirect('/auth/login');
   }
 
-  // Fetch minutes list (RLS will ensure only accessible minutes are returned)
-  const { data: minutes, error: minutesError } = await supabase
+  // 検索条件を取得
+  const params = await searchParams;
+  const { title, dateFrom, dateTo, keyword } = params;
+
+  // Fetch minutes list with search conditions (RLS will ensure only accessible minutes are returned)
+  let query = supabase
     .from('minutes')
-    .select('id, title, meeting_date, created_at')
+    .select('id, title, meeting_date, created_at, raw_text')
     .order('created_at', { ascending: false });
+
+  // タイトル検索（部分一致）
+  if (title) {
+    query = query.ilike('title', `%${title}%`);
+  }
+
+  // 会議日範囲検索
+  if (dateFrom) {
+    query = query.gte('meeting_date', dateFrom);
+  }
+  if (dateTo) {
+    query = query.lte('meeting_date', dateTo);
+  }
+
+  // キーワード検索（raw_text部分一致）
+  if (keyword) {
+    query = query.ilike('raw_text', `%${keyword}%`);
+  }
+
+  const { data: minutes, error: minutesError } = await query;
 
   if (minutesError) {
     console.error('Failed to fetch minutes:', minutesError);
@@ -36,6 +72,9 @@ export default async function MinutesListPage() {
     );
   }
 
+  // 検索条件が存在するかチェック
+  const hasSearchConditions = title || dateFrom || dateTo || keyword;
+
   return (
     <div className="max-w-6xl mx-auto p-6">
       <div className="mb-8">
@@ -45,17 +84,31 @@ export default async function MinutesListPage() {
         </p>
       </div>
 
+      {/* 検索フォーム */}
+      <SearchForm />
+
+      {/* 検索結果数表示 */}
+      {hasSearchConditions && minutes && (
+        <div className="mb-4 text-sm text-gray-600 dark:text-gray-400">
+          検索結果: {minutes.length}件
+        </div>
+      )}
+
       {!minutes || minutes.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400 mb-4">
-            議事録がまだありません
+            {hasSearchConditions
+              ? '検索条件に一致する議事録が見つかりませんでした'
+              : '議事録がまだありません'}
           </p>
-          <Link
-            href="/"
-            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
-          >
-            トップページで議事録を作成する
-          </Link>
+          {!hasSearchConditions && (
+            <Link
+              href="/"
+              className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
+            >
+              トップページで議事録を作成する
+            </Link>
+          )}
         </div>
       ) : (
         <div className="grid gap-4">
