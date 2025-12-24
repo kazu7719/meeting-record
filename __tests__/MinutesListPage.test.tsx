@@ -5,11 +5,13 @@ import MinutesListPage from '@/app/protected/minutes/page';
 // Mock next/navigation
 const mockPush = jest.fn();
 const mockRedirect = jest.fn();
+const mockSearchParams = new URLSearchParams();
 
 jest.mock('next/navigation', () => ({
   useRouter: jest.fn(() => ({
     push: mockPush,
   })),
+  useSearchParams: jest.fn(() => mockSearchParams),
   redirect: (url: string) => {
     mockRedirect(url);
     throw new Error(`REDIRECT: ${url}`);
@@ -41,7 +43,7 @@ describe('MinutesListPage', () => {
     });
 
     await expect(async () => {
-      await MinutesListPage();
+      await MinutesListPage({ searchParams: Promise.resolve({}) });
     }).rejects.toThrow('REDIRECT: /auth/login');
 
     expect(mockRedirect).toHaveBeenCalledWith('/auth/login');
@@ -53,16 +55,20 @@ describe('MinutesListPage', () => {
       error: null,
     });
 
-    mockFrom.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        order: jest.fn().mockResolvedValue({
-          data: [],
-          error: null,
-        }),
-      }),
+    const mockQuery = {
+      select: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      ilike: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+    };
+    mockQuery.order.mockResolvedValue({
+      data: [],
+      error: null,
     });
+    mockFrom.mockReturnValue(mockQuery);
 
-    const result = await MinutesListPage();
+    const result = await MinutesListPage({ searchParams: Promise.resolve({}) });
     const { container } = render(result);
 
     expect(container).toBeInTheDocument();
@@ -80,25 +86,31 @@ describe('MinutesListPage', () => {
         title: 'テスト会議1',
         meeting_date: '2025-01-15',
         created_at: '2025-01-15T10:00:00Z',
+        raw_text: 'テスト議事録1',
       },
       {
         id: '2',
         title: 'テスト会議2',
         meeting_date: null,
         created_at: '2025-01-14T10:00:00Z',
+        raw_text: 'テスト議事録2',
       },
     ];
 
-    mockFrom.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        order: jest.fn().mockResolvedValue({
-          data: mockMinutes,
-          error: null,
-        }),
-      }),
+    const mockQuery = {
+      select: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      ilike: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+    };
+    mockQuery.order.mockResolvedValue({
+      data: mockMinutes,
+      error: null,
     });
+    mockFrom.mockReturnValue(mockQuery);
 
-    const result = await MinutesListPage();
+    const result = await MinutesListPage({ searchParams: Promise.resolve({}) });
     render(result);
 
     expect(screen.getByText('テスト会議1')).toBeInTheDocument();
@@ -117,19 +129,24 @@ describe('MinutesListPage', () => {
         title: 'テスト会議',
         meeting_date: '2025-01-15',
         created_at: '2025-01-15T10:00:00Z',
+        raw_text: 'テスト議事録',
       },
     ];
 
-    mockFrom.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        order: jest.fn().mockResolvedValue({
-          data: mockMinutes,
-          error: null,
-        }),
-      }),
+    const mockQuery = {
+      select: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      ilike: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+    };
+    mockQuery.order.mockResolvedValue({
+      data: mockMinutes,
+      error: null,
     });
+    mockFrom.mockReturnValue(mockQuery);
 
-    const result = await MinutesListPage();
+    const result = await MinutesListPage({ searchParams: Promise.resolve({}) });
     render(result);
 
     const link = screen.getByRole('link', { name: /テスト会議/ });
@@ -142,16 +159,20 @@ describe('MinutesListPage', () => {
       error: null,
     });
 
-    mockFrom.mockReturnValue({
-      select: jest.fn().mockReturnValue({
-        order: jest.fn().mockResolvedValue({
-          data: [],
-          error: null,
-        }),
-      }),
+    const mockQuery = {
+      select: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      ilike: jest.fn().mockReturnThis(),
+      gte: jest.fn().mockReturnThis(),
+      lte: jest.fn().mockReturnThis(),
+    };
+    mockQuery.order.mockResolvedValue({
+      data: [],
+      error: null,
     });
+    mockFrom.mockReturnValue(mockQuery);
 
-    const result = await MinutesListPage();
+    const result = await MinutesListPage({ searchParams: Promise.resolve({}) });
     render(result);
 
     expect(screen.getByText(/議事録がまだありません/)).toBeInTheDocument();
