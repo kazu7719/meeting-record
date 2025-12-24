@@ -6,18 +6,28 @@ import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { SaveDialog } from './save-dialog';
 
+interface ActionItem {
+  task_content: string;
+  assignee_name: string | null;
+  due_at: string | null;
+  note: string | null;
+  evidence: string;
+}
+
 interface SaveButtonProps {
   rawText: string;
+  summary?: string | null;
+  actions?: ActionItem[] | null;
 }
 
 /**
  * 保存ボタンコンポーネント
- * Issue 5: raw_text登録と保存導線
+ * Issue 5, 7, 8: raw_text登録と保存導線、AI結果の保存
  *
  * - 未ログイン：ログインページへ誘導
  * - ログイン済：保存ダイアログを開く
  */
-export function SaveButton({ rawText }: SaveButtonProps) {
+export function SaveButton({ rawText, summary, actions }: SaveButtonProps) {
   const router = useRouter();
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -67,6 +77,8 @@ export function SaveButton({ rawText }: SaveButtonProps) {
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         rawText={rawText}
+        summary={summary}
+        actions={actions}
       />
     </>
   );

@@ -198,7 +198,7 @@ export function GuestTop() {
 
       {/* 保存ボタンエリア */}
       <div className="flex justify-end gap-4">
-        <SaveButton rawText={rawText} />
+        <SaveButton rawText={rawText} summary={summary} actions={actions} />
       </div>
 
       <div className="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">

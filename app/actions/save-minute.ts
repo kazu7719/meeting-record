@@ -2,10 +2,20 @@
 
 import { createClient } from '@/lib/supabase/server';
 
+interface ActionItem {
+  task_content: string;
+  assignee_name: string | null;
+  due_at: string | null;
+  note: string | null;
+  evidence: string;
+}
+
 interface SaveMinuteParams {
   title: string;
   meetingDate: string | null;
   rawText: string;
+  summary?: string | null;
+  actions?: ActionItem[] | null;
 }
 
 export async function saveMinute(params: SaveMinuteParams) {
@@ -68,6 +78,7 @@ export async function saveMinute(params: SaveMinuteParams) {
         title: params.title.trim(),
         meeting_date: params.meetingDate || null,
         raw_text: params.rawText,
+        summary: params.summary || null,
         owner_id: user.id,
         department_id: profile.department_id,
       })
@@ -80,6 +91,27 @@ export async function saveMinute(params: SaveMinuteParams) {
         success: false,
         error: 'データベースへの保存に失敗しました',
       };
+    }
+
+    // action_items INSERT（存在する場合）
+    if (params.actions && params.actions.length > 0) {
+      const { error: actionsError } = await supabase
+        .from('action_items')
+        .insert(
+          params.actions.map((action) => ({
+            minute_id: minute.id,
+            task_content: action.task_content,
+            assignee_name: action.assignee_name,
+            due_at: action.due_at,
+            note: action.note,
+            evidence: action.evidence,
+          }))
+        );
+
+      if (actionsError) {
+        // action_items の保存に失敗してもminutes自体は保存成功
+        console.error('action_items insert error:', actionsError);
+      }
     }
 
     return {

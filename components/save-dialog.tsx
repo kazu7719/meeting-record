@@ -14,13 +14,29 @@ import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
+interface ActionItem {
+  task_content: string;
+  assignee_name: string | null;
+  due_at: string | null;
+  note: string | null;
+  evidence: string;
+}
+
 interface SaveDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   rawText: string;
+  summary?: string | null;
+  actions?: ActionItem[] | null;
 }
 
-export function SaveDialog({ open, onOpenChange, rawText }: SaveDialogProps) {
+export function SaveDialog({
+  open,
+  onOpenChange,
+  rawText,
+  summary,
+  actions,
+}: SaveDialogProps) {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [meetingDate, setMeetingDate] = useState('');
@@ -44,6 +60,8 @@ export function SaveDialog({ open, onOpenChange, rawText }: SaveDialogProps) {
         title,
         meetingDate: meetingDate || null,
         rawText,
+        summary,
+        actions,
       });
 
       if (result.success && result.minuteId) {
