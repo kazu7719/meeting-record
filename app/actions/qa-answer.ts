@@ -114,11 +114,14 @@ export async function executeQA(
     }
 
     const genAI = getGeminiClient();
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = getQAPrompt(rawText, question);
     const apiResult = await model.generateContent(prompt);
-    const responseText = apiResult.response.text();
+    let responseText = apiResult.response.text();
+
+    // マークダウンのコードブロックを除去（```json ... ``` を除去）
+    responseText = responseText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
 
     // 8. JSON parse & バリデーション
     let qaResult: QAResult;
@@ -126,6 +129,7 @@ export async function executeQA(
       qaResult = JSON.parse(responseText);
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
+      console.error('Response text:', responseText);
       return {
         success: false,
         error: 'QA処理に失敗しました。もう一度お試しください（JSON形式エラー）',

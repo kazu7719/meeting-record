@@ -115,11 +115,14 @@ export async function extractActions(
     }
 
     const genAI = getGeminiClient();
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     const prompt = getActionExtractionPrompt(rawText);
     const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    let responseText = result.response.text();
+
+    // マークダウンのコードブロックを除去（```json ... ``` を除去）
+    responseText = responseText.replace(/```json\s*/g, '').replace(/```\s*/g, '').trim();
 
     // 7. JSON parse & 必須キー検証
     let actions: ActionItem[];
@@ -127,6 +130,7 @@ export async function extractActions(
       actions = JSON.parse(responseText);
     } catch (parseError) {
       console.error('JSON parse error:', parseError);
+      console.error('Response text:', responseText);
       return {
         success: false,
         error: 'アクション抽出に失敗しました。もう一度お試しください',
