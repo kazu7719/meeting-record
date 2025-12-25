@@ -42,8 +42,14 @@ export function LoginForm({
 
       // Ensure profile exists for the user (Issue 1: profiles自動作成)
       // Server Actionを直接呼び出し（API Route不要）
-      if (data.user) {
-        await ensureProfileExists();
+      if (data.session) {
+        try {
+          await ensureProfileExists();
+        } catch (profileError) {
+          console.error('Profile creation error:', profileError);
+          // プロフィール作成に失敗した場合、ユーザーにエラーを表示
+          throw new Error('プロフィールの作成に失敗しました。もう一度お試しください。');
+        }
       }
 
       // Update this route to redirect to an authenticated route. The user already has an active session.

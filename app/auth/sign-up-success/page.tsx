@@ -5,6 +5,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -14,15 +16,17 @@ export default function Page() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">
-                Thank you for signing up!
+                アカウント作成完了！
               </CardTitle>
-              <CardDescription>Check your email to confirm</CardDescription>
+              <CardDescription>すぐにログインできます</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex flex-col gap-4">
               <p className="text-sm text-muted-foreground">
-                You&apos;ve successfully signed up. Please check your email to
-                confirm your account before signing in.
+                アカウントの作成が完了しました。すぐにログインして議事録管理を始められます。
               </p>
+              <Link href="/auth/login" className="w-full">
+                <Button className="w-full">ログインページへ</Button>
+              </Link>
             </CardContent>
           </Card>
         </div>
