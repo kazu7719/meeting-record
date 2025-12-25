@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { SearchForm } from '@/components/search-form';
+import { Button } from '@/components/ui/button';
+import { ROUTES } from '@/lib/routes';
 
 interface MinutesListPageProps {
   searchParams?: Promise<{
@@ -24,7 +26,7 @@ export default async function MinutesListPage({
   } = await supabase.auth.getUser();
 
   if (userError || !user) {
-    redirect('/auth/login');
+    redirect(ROUTES.LOGIN);
   }
 
   // 検索条件を取得
@@ -61,8 +63,13 @@ export default async function MinutesListPage({
     console.error('Failed to fetch minutes:', minutesError);
     return (
       <div className="max-w-6xl mx-auto p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">議事録一覧</h1>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">議事録一覧</h1>
+          </div>
+          <Button asChild aria-label="新しい議事録を作成">
+            <Link href={ROUTES.HOME}>新規議事録作成</Link>
+          </Button>
         </div>
         <div className="text-center py-12 text-red-600 dark:text-red-400">
           <p className="mb-4">議事録の取得に失敗しました。</p>
@@ -77,11 +84,16 @@ export default async function MinutesListPage({
 
   return (
     <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">議事録一覧</h1>
-        <p className="text-gray-600 dark:text-gray-400">
-          保存された議事録を閲覧できます
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">議事録一覧</h1>
+          <p className="text-gray-600 dark:text-gray-400">
+            保存された議事録を閲覧できます
+          </p>
+        </div>
+        <Button asChild aria-label="新しい議事録を作成">
+          <Link href={ROUTES.HOME}>新規議事録作成</Link>
+        </Button>
       </div>
 
       {/* 検索フォーム */}
@@ -103,7 +115,7 @@ export default async function MinutesListPage({
           </p>
           {!hasSearchConditions && (
             <Link
-              href="/"
+              href={ROUTES.HOME}
               className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
             >
               トップページで議事録を作成する
