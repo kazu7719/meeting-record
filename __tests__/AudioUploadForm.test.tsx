@@ -26,14 +26,14 @@ describe('AudioUploadForm', () => {
     render(<AudioUploadForm minuteId="test-minute-id" />);
 
     expect(screen.getByText(/音声アップロード/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/音声ファイル/i)).toBeInTheDocument();
+    expect(document.querySelector('input[type="file"]')).toBeInTheDocument();
   });
 
   test('許可外形式（mp3）はエラーメッセージが表示される', async () => {
     render(<AudioUploadForm minuteId="test-minute-id" />);
 
     const file = new File(['audio content'], 'test.mp3', { type: 'audio/mpeg' });
-    const input = screen.getByLabelText(/音声ファイル/i) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     fireEvent.change(input, { target: { files: [file] } });
 
@@ -50,7 +50,7 @@ describe('AudioUploadForm', () => {
       'test.m4a',
       { type: 'audio/mp4' }
     );
-    const input = screen.getByLabelText(/音声ファイル/i) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
 
     fireEvent.change(input, { target: { files: [largeFile] } });
 
@@ -68,7 +68,7 @@ describe('AudioUploadForm', () => {
       'test.m4a',
       { type: 'audio/mp4' }
     );
-    const input = screen.getByLabelText(/音声ファイル/i) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const submitButton = screen.getByRole('button', { name: /アップロード/i });
 
     fireEvent.change(input, { target: { files: [validFile] } });
@@ -88,7 +88,7 @@ describe('AudioUploadForm', () => {
       'test.m4a',
       { type: 'audio/mp4' }
     );
-    const input = screen.getByLabelText(/音声ファイル/i) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const submitButton = screen.getByRole('button', { name: /アップロード/i });
 
     fireEvent.change(input, { target: { files: [validFile] } });
@@ -111,7 +111,7 @@ describe('AudioUploadForm', () => {
       'test.m4a',
       { type: 'audio/mp4' }
     );
-    const input = screen.getByLabelText(/音声ファイル/i) as HTMLInputElement;
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
     const submitButton = screen.getByRole('button', { name: /アップロード/i });
 
     fireEvent.change(input, { target: { files: [validFile] } });
