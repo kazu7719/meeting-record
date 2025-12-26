@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { uploadAudio, transcribeAudio } from '@/app/protected/minutes/[id]/actions';
 import { useRouter } from 'next/navigation';
-import { AUDIO_UPLOAD } from '@/lib/constants/audio';
+import { AUDIO_UPLOAD, type AllowedMimeType } from '@/lib/constants/audio';
 
 interface AudioUploadFormProps {
   minuteId: string;
@@ -21,9 +21,14 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
   const router = useRouter();
 
   const validateFile = (selectedFile: File): string | null => {
+    // Type guard for allowed MIME types
+    const isAllowedMimeType = (type: string): type is AllowedMimeType => {
+      return (AUDIO_UPLOAD.ALLOWED_MIME_TYPES as readonly string[]).includes(type);
+    };
+
     // Validate MIME type
-    if (selectedFile.type !== AUDIO_UPLOAD.ALLOWED_MIME_TYPE) {
-      return `${AUDIO_UPLOAD.ALLOWED_MIME_TYPE}形式のファイルのみアップロード可能です`;
+    if (!isAllowedMimeType(selectedFile.type)) {
+      return `m4a形式のファイルのみアップロード可能です（${AUDIO_UPLOAD.ALLOWED_MIME_TYPES.join(', ')}）`;
     }
 
     // Validate file size

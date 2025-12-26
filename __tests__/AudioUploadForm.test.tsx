@@ -38,7 +38,7 @@ describe('AudioUploadForm', () => {
     fireEvent.change(input, { target: { files: [file] } });
 
     await waitFor(() => {
-      expect(screen.getByText(/audio\/mp4.*のみ/i)).toBeInTheDocument();
+      expect(screen.getByText(/m4a形式のファイルのみ/i)).toBeInTheDocument();
     });
   });
 

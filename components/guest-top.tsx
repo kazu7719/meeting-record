@@ -12,7 +12,7 @@ import { generateSummary } from '@/app/actions/generate-summary';
 import { extractActions, type ActionItem } from '@/app/actions/extract-actions';
 import { executeQA, type QAResult } from '@/app/actions/qa-answer';
 import { transcribeAudio } from '@/app/protected/minutes/[id]/actions';
-import { AUDIO_UPLOAD } from '@/lib/constants/audio';
+import { AUDIO_UPLOAD, type AllowedMimeType } from '@/lib/constants/audio';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 
@@ -151,8 +151,13 @@ export function GuestTop() {
 
   // Audio transcription handlers
   const validateAudioFile = (file: File): string | null => {
-    if (file.type !== AUDIO_UPLOAD.ALLOWED_MIME_TYPE) {
-      return `${AUDIO_UPLOAD.ALLOWED_MIME_TYPE}形式のファイルのみ対応しています`;
+    // Type guard for allowed MIME types
+    const isAllowedMimeType = (type: string): type is AllowedMimeType => {
+      return (AUDIO_UPLOAD.ALLOWED_MIME_TYPES as readonly string[]).includes(type);
+    };
+
+    if (!isAllowedMimeType(file.type)) {
+      return `m4a形式のファイルのみ対応しています（${AUDIO_UPLOAD.ALLOWED_MIME_TYPES.join(', ')}）`;
     }
     if (file.size > AUDIO_UPLOAD.MAX_FILE_SIZE) {
       return 'ファイルサイズは20MB以下にしてください';

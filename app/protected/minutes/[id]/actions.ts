@@ -1,7 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
-import { AUDIO_UPLOAD } from '@/lib/constants/audio';
+import { AUDIO_UPLOAD, type AllowedMimeType } from '@/lib/constants/audio';
 import OpenAI from 'openai';
 import crypto from 'crypto';
 
@@ -48,10 +48,14 @@ export async function uploadAudio(formData: FormData) {
     }
 
     // Validate MIME type
-    if (file.type !== AUDIO_UPLOAD.ALLOWED_MIME_TYPE) {
+    const isAllowedMimeType = (type: string): type is AllowedMimeType => {
+      return (AUDIO_UPLOAD.ALLOWED_MIME_TYPES as readonly string[]).includes(type);
+    };
+
+    if (!isAllowedMimeType(file.type)) {
       return {
         success: false,
-        error: `${AUDIO_UPLOAD.ALLOWED_MIME_TYPE}形式のファイルのみアップロード可能です`,
+        error: `m4a形式のファイルのみアップロード可能です（${AUDIO_UPLOAD.ALLOWED_MIME_TYPES.join(', ')}）`,
       };
     }
 
@@ -239,10 +243,14 @@ export async function transcribeAudio(formData: FormData) {
     }
 
     // Validate MIME type
-    if (file.type !== AUDIO_UPLOAD.ALLOWED_MIME_TYPE) {
+    const isAllowedMimeType = (type: string): type is AllowedMimeType => {
+      return (AUDIO_UPLOAD.ALLOWED_MIME_TYPES as readonly string[]).includes(type);
+    };
+
+    if (!isAllowedMimeType(file.type)) {
       return {
         success: false,
-        error: `${AUDIO_UPLOAD.ALLOWED_MIME_TYPE}形式のファイルのみ対応しています`,
+        error: `m4a形式のファイルのみ対応しています（${AUDIO_UPLOAD.ALLOWED_MIME_TYPES.join(', ')}）`,
       };
     }
 
