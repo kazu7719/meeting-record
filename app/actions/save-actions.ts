@@ -92,14 +92,32 @@ export async function saveActions(
     }
 
     // 5. action_itemsへの一括INSERT
-    const insertData = actions.map((action) => ({
-      minute_id: minuteId,
-      task_content: action.task_content,
-      assignee_name: action.assignee_name,
-      due_at: action.due_at,
-      note: action.note,
-      evidence: action.evidence,
-    }));
+    const insertData = actions.map((action) => {
+      // due_atの型変換処理
+      let dueAt: string | null = null;
+
+      if (action.due_at) {
+        try {
+          // 日付のパース試行（ISO 8601形式などをサポート）
+          const date = new Date(action.due_at);
+          if (!isNaN(date.getTime())) {
+            dueAt = date.toISOString();
+          }
+        } catch {
+          // パース失敗時はnullのまま
+          console.warn(`Invalid date format for due_at: ${action.due_at}`);
+        }
+      }
+
+      return {
+        minute_id: minuteId,
+        task_content: action.task_content,
+        assignee_name: action.assignee_name,
+        due_at: dueAt,
+        note: action.note,
+        evidence: action.evidence,
+      };
+    });
 
     const { error: insertError } = await supabase
       .from('action_items')
