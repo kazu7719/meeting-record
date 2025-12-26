@@ -5,6 +5,9 @@ import { SearchForm } from '@/components/search-form';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/lib/routes';
 
+// Force dynamic rendering (uses searchParams)
+export const dynamic = 'force-dynamic';
+
 interface MinutesListPageProps {
   searchParams?: Promise<{
     title?: string;

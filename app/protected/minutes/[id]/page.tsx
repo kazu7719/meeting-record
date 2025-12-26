@@ -6,10 +6,8 @@ interface MinuteDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-// Generate static params (empty for fully dynamic routes)
-export async function generateStaticParams() {
-  return [];
-}
+// Force dynamic rendering (no static generation)
+export const dynamic = 'force-dynamic';
 
 export default async function MinuteDetailPage({ params }: MinuteDetailPageProps) {
   const { id } = await params;
