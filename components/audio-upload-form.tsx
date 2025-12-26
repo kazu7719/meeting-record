@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { uploadAudio } from '@/app/protected/minutes/[id]/actions';
+import { uploadAudio, transcribeAudio } from '@/app/protected/minutes/[id]/actions';
 import { useRouter } from 'next/navigation';
 import { AUDIO_UPLOAD, type AllowedMimeType } from '@/lib/constants/audio';
 
@@ -14,6 +14,7 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
+  const [enableTranscription, setEnableTranscription] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -77,8 +78,23 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
       const result = await uploadAudio(formData);
 
       if (result.success) {
-        setSuccess('アップロードが完了しました');
+        // If transcription is enabled, transcribe the audio
+        if (enableTranscription) {
+          const transcribeResult = await transcribeAudio(minuteId, result.filePath);
+
+          if (transcribeResult.success) {
+            setSuccess('アップロードと文字起こしが完了しました');
+          } else {
+            setError(transcribeResult.error || '文字起こしに失敗しました');
+            setIsUploading(false);
+            return;
+          }
+        } else {
+          setSuccess('アップロードが完了しました');
+        }
+
         setFile(null);
+        setEnableTranscription(false);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
         }
@@ -126,6 +142,25 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
           )}
         </div>
 
+        <div className="mb-4">
+          <label className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={enableTranscription}
+              onChange={(e) => setEnableTranscription(e.target.checked)}
+              disabled={isUploading}
+              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="文字起こしを実行"
+            />
+            <span className="text-sm font-medium">
+              文字起こしを実行（Google Cloud Speech-to-Text）
+            </span>
+          </label>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400 ml-6">
+            音声を文字起こしして、議事録テキスト（raw_text）として保存します
+          </p>
+        </div>
+
         {error && (
           <div
             role="alert"
@@ -166,7 +201,7 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
         <p>※ 対応形式: audio/mp4 (.m4a)</p>
         <p>※ 最大サイズ: 20MB</p>
         <p className="mt-2 text-xs">
-          💡 音声ファイルを保存します。文字起こしはトップページのリアルタイム録音機能をご利用ください。
+          💡 文字起こしを有効にすると、音声がテキストに変換されraw_textとして保存されます
         </p>
       </div>
     </div>

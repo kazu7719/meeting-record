@@ -5,7 +5,11 @@ import { AUDIO_UPLOAD, type AllowedMimeType } from '@/lib/constants/audio';
 
 // 戻り値の型定義
 type UploadAudioResult =
-  | { success: true }
+  | { success: true; filePath: string }
+  | { success: false; error: string };
+
+type TranscribeAudioResult =
+  | { success: true; transcript: string }
   | { success: false; error: string };
 
 export async function uploadAudio(formData: FormData): Promise<UploadAudioResult> {
@@ -126,9 +130,154 @@ export async function uploadAudio(formData: FormData): Promise<UploadAudioResult
 
     return {
       success: true,
+      filePath,
     };
   } catch (error) {
     console.error('Unexpected error in uploadAudio:', error);
+    return {
+      success: false,
+      error: 'エラーが発生しました。しばらく経ってから再度お試しください',
+    };
+  }
+}
+
+export async function transcribeAudio(
+  minuteId: string,
+  filePath: string
+): Promise<TranscribeAudioResult> {
+  try {
+    const supabase = await createClient();
+
+    // Get authenticated user
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
+
+    if (userError || !user) {
+      return {
+        success: false,
+        error: 'ログインが必要です',
+      };
+    }
+
+    // Verify minute ownership
+    const { data: minute, error: minuteError } = await supabase
+      .from('minutes')
+      .select('id, owner_id')
+      .eq('id', minuteId)
+      .eq('owner_id', user.id)
+      .single();
+
+    if (minuteError || !minute) {
+      return {
+        success: false,
+        error: '議事録が見つからないか、アクセス権限がありません',
+      };
+    }
+
+    // Download audio file from Supabase Storage
+    const { data: fileData, error: downloadError } = await supabase.storage
+      .from('audio')
+      .download(filePath);
+
+    if (downloadError || !fileData) {
+      console.error('Storage download error:', downloadError);
+      return {
+        success: false,
+        error: '音声ファイルのダウンロードに失敗しました',
+      };
+    }
+
+    // Convert file to base64
+    const arrayBuffer = await fileData.arrayBuffer();
+    const base64Audio = Buffer.from(arrayBuffer).toString('base64');
+
+    // Call Google Cloud Speech-to-Text API
+    const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
+    if (!apiKey) {
+      console.error('GOOGLE_CLOUD_API_KEY is not set');
+      return {
+        success: false,
+        error: '文字起こし機能の設定が完了していません',
+      };
+    }
+
+    const response = await fetch(
+      'https://speech.googleapis.com/v1/speech:recognize',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+        },
+        body: JSON.stringify({
+          config: {
+            encoding: 'MP3',
+            sampleRateHertz: 16000,
+            languageCode: 'ja-JP',
+            enableAutomaticPunctuation: true,
+          },
+          audio: {
+            content: base64Audio,
+          },
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Google Cloud API error:', errorText);
+      return {
+        success: false,
+        error: '文字起こしに失敗しました',
+      };
+    }
+
+    const result = await response.json();
+
+    // Extract transcript from response
+    if (!result.results || result.results.length === 0) {
+      return {
+        success: false,
+        error: '音声を認識できませんでした',
+      };
+    }
+
+    const transcript = result.results
+      .map((r: { alternatives: { transcript: string }[] }) =>
+        r.alternatives[0]?.transcript || ''
+      )
+      .join('\n');
+
+    if (!transcript) {
+      return {
+        success: false,
+        error: '文字起こし結果が空です',
+      };
+    }
+
+    // Update minutes.raw_text with transcript
+    const { error: updateError } = await supabase
+      .from('minutes')
+      .update({ raw_text: transcript })
+      .eq('id', minuteId)
+      .eq('owner_id', user.id);
+
+    if (updateError) {
+      console.error('Database update error:', updateError);
+      return {
+        success: false,
+        error: '文字起こし結果の保存に失敗しました',
+      };
+    }
+
+    return {
+      success: true,
+      transcript,
+    };
+  } catch (error) {
+    console.error('Unexpected error in transcribeAudio:', error);
     return {
       success: false,
       error: 'エラーが発生しました。しばらく経ってから再度お試しください',

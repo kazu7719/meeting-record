@@ -13,8 +13,10 @@ jest.mock('next/navigation', () => ({
 
 // Mock Server Action
 const mockUploadAudio = jest.fn();
+const mockTranscribeAudio = jest.fn();
 jest.mock('@/app/protected/minutes/[id]/actions', () => ({
   uploadAudio: (...args: unknown[]) => mockUploadAudio(...args),
+  transcribeAudio: (...args: unknown[]) => mockTranscribeAudio(...args),
 }));
 
 describe('AudioUploadForm', () => {
@@ -119,6 +121,64 @@ describe('AudioUploadForm', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/アップロードに失敗しました/i)).toBeInTheDocument();
+    });
+  });
+
+  test('文字起こしチェックボックスが表示される', () => {
+    render(<AudioUploadForm minuteId="test-minute-id" />);
+
+    const checkbox = screen.getByLabelText(/文字起こしを実行/i);
+    expect(checkbox).toBeInTheDocument();
+    expect(checkbox).not.toBeChecked();
+  });
+
+  test('文字起こしをONにしてアップロードすると文字起こしが実行される', async () => {
+    mockUploadAudio.mockResolvedValue({ success: true, filePath: 'test/path.m4a' });
+    mockTranscribeAudio.mockResolvedValue({ success: true, transcript: 'テスト文字起こし' });
+    render(<AudioUploadForm minuteId="test-minute-id" />);
+
+    const validFile = new File(
+      [new ArrayBuffer(1 * 1024 * 1024)],
+      'test.m4a',
+      { type: 'audio/mp4' }
+    );
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const checkbox = screen.getByLabelText(/文字起こしを実行/i) as HTMLInputElement;
+    const submitButton = screen.getByRole('button', { name: /アップロード/i });
+
+    fireEvent.change(input, { target: { files: [validFile] } });
+    fireEvent.click(checkbox);
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockUploadAudio).toHaveBeenCalled();
+      expect(mockTranscribeAudio).toHaveBeenCalled();
+    });
+  });
+
+  test('文字起こし失敗時にエラーメッセージが表示される', async () => {
+    mockUploadAudio.mockResolvedValue({ success: true, filePath: 'test/path.m4a' });
+    mockTranscribeAudio.mockResolvedValue({
+      success: false,
+      error: '文字起こしに失敗しました'
+    });
+    render(<AudioUploadForm minuteId="test-minute-id" />);
+
+    const validFile = new File(
+      [new ArrayBuffer(1 * 1024 * 1024)],
+      'test.m4a',
+      { type: 'audio/mp4' }
+    );
+    const input = document.querySelector('input[type="file"]') as HTMLInputElement;
+    const checkbox = screen.getByLabelText(/文字起こしを実行/i) as HTMLInputElement;
+    const submitButton = screen.getByRole('button', { name: /アップロード/i });
+
+    fireEvent.change(input, { target: { files: [validFile] } });
+    fireEvent.click(checkbox);
+    fireEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/文字起こしに失敗しました/i)).toBeInTheDocument();
     });
   });
 });
