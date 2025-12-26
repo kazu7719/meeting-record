@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { SaveButton } from './save-button';
 import { AiControls } from './ai-controls';
 import { SummaryResult } from './summary-result';
@@ -11,9 +11,6 @@ import { Button } from '@/components/ui/button';
 import { generateSummary } from '@/app/actions/generate-summary';
 import { extractActions, type ActionItem } from '@/app/actions/extract-actions';
 import { executeQA, type QAResult } from '@/app/actions/qa-answer';
-import { createClient } from '@/lib/supabase/client';
-import { useRouter } from 'next/navigation';
-import VoiceRecorder from './voice-recorder';
 
 const SAMPLE_TEXT =
   '# 開発進捗定例（サンプル）\n\n' +
@@ -36,7 +33,6 @@ const MAX_CHARS = 30000;
  * - 保存ボタン（Client Component）
  */
 export function GuestTop() {
-  const router = useRouter();
   const [rawText, setRawText] = useState(SAMPLE_TEXT);
   const [summary, setSummary] = useState<string | null>(null);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
@@ -48,23 +44,6 @@ export function GuestTop() {
   const [qaResult, setQaResult] = useState<QAResult | null>(null);
   const [isExecutingQA, setIsExecutingQA] = useState(false);
   const [qaError, setQaError] = useState<string | null>(null);
-
-  // Authentication state
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
-
-  // Check authentication status (CRITICAL: audio feature is login-only)
-  useEffect(() => {
-    const checkAuth = async () => {
-      const supabase = createClient();
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setIsAuthenticated(!!user);
-      setIsCheckingAuth(false);
-    };
-    checkAuth();
-  }, []);
 
   const handleInsertSample = () => {
     setRawText(SAMPLE_TEXT);
@@ -134,11 +113,6 @@ export function GuestTop() {
     }
   };
 
-  // Voice recording handler (メモ化)
-  const handleTranscriptChange = useCallback((transcript: string) => {
-    setRawText(transcript);
-  }, []);
-
   const charCount = rawText.length;
   const isOverLimit = charCount > MAX_CHARS;
 
@@ -200,30 +174,6 @@ export function GuestTop() {
           )}
         </div>
       </div>
-
-      {/* 音声文字起こしセクション（ログイン後のみ表示） */}
-      {!isCheckingAuth && isAuthenticated && (
-        <div className="mb-6">
-          <VoiceRecorder onTranscriptChange={handleTranscriptChange} />
-        </div>
-      )}
-
-      {/* 未ログイン時の案内メッセージ */}
-      {!isCheckingAuth && !isAuthenticated && (
-        <div className="mb-6 border rounded-lg p-6 bg-gray-50 dark:bg-gray-900/50">
-          <h3 className="text-lg font-semibold mb-2">音声文字起こし機能</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
-            音声をリアルタイムでテキスト化する機能は、ログイン後にご利用いただけます。
-          </p>
-          <Button
-            variant="outline"
-            onClick={() => router.push('/auth/login')}
-            className="w-full"
-          >
-            ログインして音声文字起こしを利用する
-          </Button>
-        </div>
-      )}
 
       {/* AI実行ボタンエリア */}
       <AiControls
