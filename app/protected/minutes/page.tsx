@@ -68,7 +68,7 @@ export default async function MinutesListPage({
             <h1 className="text-3xl font-bold mb-2">議事録一覧</h1>
           </div>
           <Button asChild aria-label="新しい議事録を作成">
-            <Link href={ROUTES.HOME}>新規議事録作成</Link>
+            <Link href={ROUTES.MINUTES_NEW}>新規議事録作成</Link>
           </Button>
         </div>
         <div className="text-center py-12 text-red-600 dark:text-red-400">
@@ -92,7 +92,7 @@ export default async function MinutesListPage({
           </p>
         </div>
         <Button asChild aria-label="新しい議事録を作成">
-          <Link href={ROUTES.HOME}>新規議事録作成</Link>
+          <Link href={ROUTES.MINUTES_NEW}>新規議事録作成</Link>
         </Button>
       </div>
 
@@ -115,10 +115,10 @@ export default async function MinutesListPage({
           </p>
           {!hasSearchConditions && (
             <Link
-              href={ROUTES.HOME}
+              href={ROUTES.MINUTES_NEW}
               className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline"
             >
-              トップページで議事録を作成する
+              新しい議事録を作成する
             </Link>
           )}
         </div>
