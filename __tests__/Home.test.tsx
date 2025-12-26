@@ -1,46 +1,26 @@
-import { render, screen } from '@testing-library/react'
-import Home from '@/app/page'
+import { ROUTES } from '@/lib/routes';
 
-// Mock Next.js navigation for SaveButton component
+// Mock next/navigation
+const mockRedirect = jest.fn();
 jest.mock('next/navigation', () => ({
-  useRouter: jest.fn(() => ({
-    push: jest.fn(),
-  })),
-}));
-
-// Mock Supabase client for SaveButton component
-jest.mock('@/lib/supabase/client', () => ({
-  createClient: jest.fn(() => ({
-    auth: {
-      getUser: jest.fn(() => Promise.resolve({ data: { user: null }, error: null })),
-    },
-  })),
+  redirect: (...args: unknown[]) => mockRedirect(...args),
 }));
 
 describe('Home', () => {
-  it('renders the main heading', () => {
-    render(<Home />)
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-    const heading = screen.getByRole('heading', {
-      name: /Meeting Record/i,
-    })
+  it('redirects to minutes list page', async () => {
+    const Home = (await import('@/app/page')).default;
 
-    expect(heading).toBeInTheDocument()
-  })
+    // Call the function (it will throw because redirect is mocked)
+    try {
+      Home();
+    } catch {
+      // redirect throws in Next.js, so we catch it
+    }
 
-  it('displays application description', () => {
-    render(<Home />)
-
-    const message = screen.getByText(/会議記録アプリケーション - AI議事録管理/i)
-
-    expect(message).toBeInTheDocument()
-  })
-
-  it('displays guest top component', () => {
-    render(<Home />)
-
-    const sampleArea = screen.getByTestId('sample-meeting-area')
-
-    expect(sampleArea).toBeInTheDocument()
-  })
-})
+    expect(mockRedirect).toHaveBeenCalledWith(ROUTES.MINUTES_LIST);
+  });
+});
