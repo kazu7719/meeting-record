@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { uploadAudio, transcribeAudio } from '@/app/protected/minutes/[id]/actions';
+import { uploadAudio } from '@/app/protected/minutes/[id]/actions';
 import { useRouter } from 'next/navigation';
 import { AUDIO_UPLOAD, type AllowedMimeType } from '@/lib/constants/audio';
 
@@ -14,9 +14,6 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
   const [error, setError] = useState<string>('');
   const [success, setSuccess] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
-  const [enableTranscription, setEnableTranscription] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false);
-  const [transcript, setTranscript] = useState<string>('');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
@@ -63,7 +60,6 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
     e.preventDefault();
     setError('');
     setSuccess('');
-    setTranscript('');
 
     if (!file) {
       setError('ファイルを選択してください');
@@ -77,37 +73,11 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
       formData.append('file', file);
       formData.append('minuteId', minuteId);
 
-      // If transcription is enabled, transcribe first
-      if (enableTranscription) {
-        setIsTranscribing(true);
-        const transcriptionFormData = new FormData();
-        transcriptionFormData.append('file', file);
-
-        const transcriptionResult = await transcribeAudio(transcriptionFormData);
-
-        setIsTranscribing(false);
-
-        if (!transcriptionResult.success) {
-          setError(transcriptionResult.error || '文字起こしに失敗しました');
-          setIsUploading(false);
-          return;
-        }
-
-        if (transcriptionResult.transcript) {
-          setTranscript(transcriptionResult.transcript);
-          setSuccess('文字起こしが完了しました');
-        }
-      }
-
       // Upload audio file
       const result = await uploadAudio(formData);
 
       if (result.success) {
-        if (!enableTranscription) {
-          setSuccess('アップロードが完了しました');
-        } else {
-          setSuccess('アップロードと文字起こしが完了しました');
-        }
+        setSuccess('アップロードが完了しました');
         setFile(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = '';
@@ -122,7 +92,6 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
       setError('エラーが発生しました。しばらく経ってから再度お試しください');
     } finally {
       setIsUploading(false);
-      setIsTranscribing(false);
     }
   };
 
@@ -157,24 +126,6 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
           )}
         </div>
 
-        <div className="mb-4">
-          <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={enableTranscription}
-              onChange={(e) => setEnableTranscription(e.target.checked)}
-              disabled={isUploading}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            />
-            <span className="text-sm font-medium">
-              文字起こしを実行（OpenAI Whisper）
-            </span>
-          </label>
-          <p className="mt-1 ml-6 text-xs text-gray-500 dark:text-gray-400">
-            音声から自動的にテキストを抽出します
-          </p>
-        </div>
-
         {error && (
           <div
             role="alert"
@@ -195,58 +146,28 @@ export default function AudioUploadForm({ minuteId }: AudioUploadFormProps) {
           </div>
         )}
 
-        {isTranscribing && (
-          <div
-            role="status"
-            aria-live="polite"
-            className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md text-blue-700 dark:text-blue-400 text-sm"
-          >
-            文字起こし中... しばらくお待ちください
-          </div>
-        )}
-
-        {transcript && (
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold mb-2">文字起こし結果</h3>
-            <div className="p-4 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-md max-h-64 overflow-y-auto">
-              <p className="text-sm whitespace-pre-wrap">{transcript}</p>
-            </div>
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              ※ この文字起こし結果は自動的に保存されません。コピーして議事録として使用できます。
-            </p>
-          </div>
-        )}
-
         <button
           type="submit"
           disabled={!file || isUploading}
           aria-label={
             isUploading
-              ? isTranscribing
-                ? '文字起こし中です。しばらくお待ちください'
-                : 'アップロード中です。しばらくお待ちください'
+              ? 'アップロード中です。しばらくお待ちください'
               : '音声ファイルをアップロード'
           }
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700
             disabled:bg-gray-300 disabled:cursor-not-allowed
             transition-colors duration-200"
         >
-          {isUploading
-            ? isTranscribing
-              ? '文字起こし中...'
-              : 'アップロード中...'
-            : 'アップロード'}
+          {isUploading ? 'アップロード中...' : 'アップロード'}
         </button>
       </form>
 
       <div className="mt-4 text-sm text-gray-600 dark:text-gray-400">
         <p>※ 対応形式: audio/mp4 (.m4a)</p>
         <p>※ 最大サイズ: 20MB</p>
-        {enableTranscription && (
-          <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">
-            ⚠️ 文字起こしには時間がかかる場合があります（1分の音声で約10-20秒）
-          </p>
-        )}
+        <p className="mt-2 text-xs">
+          💡 音声ファイルを保存します。文字起こしはトップページのリアルタイム録音機能をご利用ください。
+        </p>
       </div>
     </div>
   );
