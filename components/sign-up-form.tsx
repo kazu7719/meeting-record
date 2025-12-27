@@ -90,11 +90,6 @@ export function SignUpForm({
         <CardContent>
           <form onSubmit={handleSignUp}>
             <div className="flex flex-col gap-6">
-              <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-md p-3">
-                <p className="text-xs text-blue-800 dark:text-blue-200">
-                  💡 デモ用途のため、ダミーのメールアドレス（例: test@example.com）でも登録可能です。メール確認は不要です。
-                </p>
-              </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">メールアドレス</Label>
                 <Input
