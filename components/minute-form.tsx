@@ -11,16 +11,34 @@ import Link from 'next/link';
 
 const MAX_CHARS = 30000;
 
-export function MinuteForm() {
+interface Team {
+  id: string;
+  name: string;
+  role: string;
+}
+
+interface MinuteFormProps {
+  teams: Team[];
+  currentTeamId?: string;
+}
+
+export function MinuteForm({ teams, currentTeamId }: MinuteFormProps) {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [meetingDate, setMeetingDate] = useState('');
   const [rawText, setRawText] = useState('');
+  const [departmentId, setDepartmentId] = useState(
+    currentTeamId || teams[0]?.id || ''
+  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState('');
 
   const isOverLimit = rawText.length > MAX_CHARS;
-  const canSave = title.trim() !== '' && rawText.trim() !== '' && !isOverLimit;
+  const canSave =
+    title.trim() !== '' &&
+    rawText.trim() !== '' &&
+    departmentId !== '' &&
+    !isOverLimit;
 
   const handleSave = async () => {
     if (!canSave) return;
@@ -33,6 +51,7 @@ export function MinuteForm() {
         title: title.trim(),
         meetingDate: meetingDate || null,
         rawText,
+        departmentId,
       });
 
       if (result.success && result.minuteId) {
@@ -50,6 +69,33 @@ export function MinuteForm() {
 
   return (
     <div className="space-y-6">
+      {/* チーム選択 */}
+      <div>
+        <Label htmlFor="team">
+          保存先チーム <span className="text-red-500">*</span>
+        </Label>
+        <select
+          id="team"
+          value={departmentId}
+          onChange={(e) => setDepartmentId(e.target.value)}
+          className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
+          required
+        >
+          <option value="" disabled>
+            チームを選択してください
+          </option>
+          {teams.map((team) => (
+            <option key={team.id} value={team.id}>
+              {team.name}
+              {team.id === currentTeamId ? ' (現在のチーム)' : ''}
+            </option>
+          ))}
+        </select>
+        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+          選択したチームのメンバーが議事録を閲覧できます
+        </p>
+      </div>
+
       {/* タイトル */}
       <div>
         <Label htmlFor="title">

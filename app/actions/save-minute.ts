@@ -14,6 +14,7 @@ interface SaveMinuteParams {
   title: string;
   meetingDate: string | null;
   rawText: string;
+  departmentId: string;
   summary?: string | null;
   actions?: ActionItem[] | null;
 }
@@ -57,17 +58,18 @@ export async function saveMinute(params: SaveMinuteParams) {
       };
     }
 
-    // profilesからdepartment_idを取得
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
+    // セキュリティ検証：ユーザーが指定されたチームに所属しているか確認
+    const { data: membership, error: membershipError } = await supabase
+      .from('user_departments')
       .select('department_id')
-      .eq('id', user.id)
+      .eq('user_id', user.id)
+      .eq('department_id', params.departmentId)
       .single();
 
-    if (profileError || !profile) {
+    if (membershipError || !membership) {
       return {
         success: false,
-        error: 'プロフィール情報が取得できませんでした',
+        error: '指定されたチームに所属していません',
       };
     }
 
@@ -80,7 +82,7 @@ export async function saveMinute(params: SaveMinuteParams) {
         raw_text: params.rawText,
         summary: params.summary || null,
         owner_id: user.id,
-        department_id: profile.department_id,
+        department_id: params.departmentId,
       })
       .select('id')
       .single();
