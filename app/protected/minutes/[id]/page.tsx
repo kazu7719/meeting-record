@@ -1,6 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { notFound, redirect } from 'next/navigation';
 import { MinuteDetailAI } from '@/components/minute-detail-ai';
+import { DeleteMinuteButton } from '@/components/delete-minute-button';
+import { Button } from '@/components/ui/button';
+import { ROUTES } from '@/lib/routes';
+import Link from 'next/link';
 
 interface MinuteDetailPageProps {
   params: Promise<{ id: string }>;
@@ -41,16 +45,32 @@ export default async function MinuteDetailPage({ params }: MinuteDetailPageProps
     .eq('minute_id', id)
     .order('created_at', { ascending: true });
 
+  // 作成者かどうかを判定
+  const isOwner = minute.owner_id === user.id;
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">{minute.title}</h1>
+        <div className="flex justify-between items-start mb-2">
+          <h1 className="text-3xl font-bold">{minute.title}</h1>
+          {isOwner && (
+            <div className="flex gap-2">
+              <Button variant="outline" asChild>
+                <Link href={ROUTES.MINUTES_EDIT(minute.id)}>編集</Link>
+              </Button>
+              <DeleteMinuteButton
+                minuteId={minute.id}
+                minuteTitle={minute.title}
+              />
+            </div>
+          )}
+        </div>
         {minute.meeting_date && (
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             会議日: {new Date(minute.meeting_date).toLocaleDateString('ja-JP')}
           </p>
         )}
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-500">
           作成日: {new Date(minute.created_at).toLocaleString('ja-JP')}
         </p>
       </div>
@@ -69,7 +89,7 @@ export default async function MinuteDetailPage({ params }: MinuteDetailPageProps
         rawText={minute.raw_text}
         initialSummary={minute.summary}
         initialActionItems={actionItems || []}
-        isOwner={minute.owner_id === user.id}
+        isOwner={isOwner}
       />
     </div>
   );

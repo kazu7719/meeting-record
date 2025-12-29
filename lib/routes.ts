@@ -3,6 +3,7 @@ export const ROUTES = {
   MINUTES_LIST: '/protected/minutes',
   MINUTES_NEW: '/protected/minutes/new',
   MINUTES_DETAIL: (id: string) => `/protected/minutes/${id}`,
+  MINUTES_EDIT: (id: string) => `/protected/minutes/${id}/edit`,
   TEAMS: '/teams',
   LOGIN: '/auth/login',
   SIGNUP: '/auth/sign-up',
