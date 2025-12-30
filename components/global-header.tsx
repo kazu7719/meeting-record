@@ -10,6 +10,9 @@ export async function GlobalHeader() {
     data: { user },
   } = await supabase.auth.getUser();
 
+  console.log('GlobalHeader: user =', user);
+  console.log('GlobalHeader: user.email =', user?.email);
+
   return (
     <header className="border-b bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -38,7 +41,7 @@ export async function GlobalHeader() {
           <div className="flex items-center gap-4">
             {user ? (
               <>
-                <span className="text-sm text-muted-foreground hidden sm:inline">
+                <span className="text-sm text-muted-foreground">
                   {user.email}
                 </span>
                 <LogoutButton />
