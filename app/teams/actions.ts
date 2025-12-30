@@ -805,6 +805,17 @@ export async function deleteTeam(teamId: string): Promise<{
       return { success: false, error: 'チームを削除する権限がありません' };
     }
 
+    // Clear current_department_id for all users in this team
+    const { error: clearError } = await supabase
+      .from('profiles')
+      .update({ current_department_id: null })
+      .eq('current_department_id', teamId);
+
+    if (clearError) {
+      console.error('Failed to clear current_department_id:', clearError);
+      // Continue anyway - not critical
+    }
+
     // Delete the team (CASCADE will delete related records)
     const { error: deleteError } = await supabase
       .from('departments')
@@ -813,7 +824,7 @@ export async function deleteTeam(teamId: string): Promise<{
 
     if (deleteError) {
       console.error('Failed to delete team:', deleteError);
-      return { success: false, error: 'チームの削除に失敗しました' };
+      return { success: false, error: `チームの削除に失敗しました: ${deleteError.message}` };
     }
 
     revalidatePath('/teams');
