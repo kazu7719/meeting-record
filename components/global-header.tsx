@@ -10,9 +10,6 @@ export async function GlobalHeader() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  console.log('GlobalHeader: user =', user);
-  console.log('GlobalHeader: user.email =', user?.email);
-
   return (
     <header className="border-b bg-background">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -29,12 +26,20 @@ export async function GlobalHeader() {
                 ホーム
               </Link>
               {user && (
-                <Link
-                  href={ROUTES.MINUTES_LIST}
-                  className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  議事録一覧
-                </Link>
+                <>
+                  <Link
+                    href={ROUTES.MINUTES_LIST}
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    議事録一覧
+                  </Link>
+                  <Link
+                    href={ROUTES.TEAMS}
+                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    チーム管理
+                  </Link>
+                </>
               )}
             </nav>
           </div>
