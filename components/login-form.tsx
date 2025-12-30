@@ -54,6 +54,7 @@ export function LoginForm({
       }
 
       // ログイン成功後はトップページへリダイレクト（保存機能が有効化される）
+      router.refresh(); // サーバーコンポーネントを更新
       router.push(ROUTES.HOME);
     } catch (error: unknown) {
       setError(error instanceof Error ? error.message : "An error occurred");
