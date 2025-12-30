@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { switchTeam, leaveTeam, type UserTeam } from '@/app/teams/actions';
+import { switchTeam, leaveTeam, deleteTeam, type UserTeam } from '@/app/teams/actions';
 import { useRouter } from 'next/navigation';
 import InvitationManager from './invitation-manager';
 
@@ -51,6 +51,30 @@ export default function TeamList({ teams, currentTeamId }: TeamListProps) {
         router.refresh();
       } else {
         setError(result.error || 'チームからの退出に失敗しました');
+      }
+    } catch (err) {
+      setError('予期しないエラーが発生しました');
+      console.error(err);
+    } finally {
+      setIsLoading(null);
+    }
+  };
+
+  const handleDelete = async (teamId: string, teamName: string) => {
+    if (!confirm(`本当に「${teamName}」を削除しますか？\n\nこの操作は取り消せません。チームに関連する全ての議事録も削除されます。`)) {
+      return;
+    }
+
+    setError(null);
+    setIsLoading(teamId);
+
+    try {
+      const result = await deleteTeam(teamId);
+
+      if (result.success) {
+        router.refresh();
+      } else {
+        setError(result.error || 'チームの削除に失敗しました');
       }
     } catch (err) {
       setError('予期しないエラーが発生しました');
@@ -128,13 +152,21 @@ export default function TeamList({ teams, currentTeamId }: TeamListProps) {
                   </button>
                 )}
 
-                {team.role !== 'owner' && (
+                {team.role === 'owner' ? (
+                  <button
+                    onClick={() => handleDelete(team.id, team.name)}
+                    disabled={isLoading === team.id}
+                    className="px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    {isLoading === team.id ? '削除中...' : '削除'}
+                  </button>
+                ) : (
                   <button
                     onClick={() => handleLeave(team.id)}
                     disabled={isLoading === team.id}
                     className="px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
                   >
-                    退出
+                    {isLoading === team.id ? '退出中...' : '退出'}
                   </button>
                 )}
               </div>

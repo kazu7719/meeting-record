@@ -74,6 +74,7 @@ export async function createTeam(name: string): Promise<{
     }
 
     // Create department
+    console.log('Creating department:', { name: name.trim(), owner_id: user.id });
     const { data: department, error: deptError } = await supabase
       .from('departments')
       .insert({
@@ -85,10 +86,13 @@ export async function createTeam(name: string): Promise<{
 
     if (deptError || !department) {
       console.error('Failed to create department:', deptError);
-      return { success: false, error: 'チームの作成に失敗しました' };
+      return { success: false, error: `チームの作成に失敗しました: ${deptError?.message || '不明なエラー'}` };
     }
 
+    console.log('Department created:', department);
+
     // Add creator as owner in user_departments
+    console.log('Adding user to department:', { user_id: user.id, department_id: department.id, role: 'owner' });
     const { error: memberError } = await supabase
       .from('user_departments')
       .insert({
@@ -99,10 +103,13 @@ export async function createTeam(name: string): Promise<{
 
     if (memberError) {
       console.error('Failed to add user to department:', memberError);
-      return { success: false, error: 'チームメンバーの追加に失敗しました' };
+      return { success: false, error: `チームメンバーの追加に失敗しました: ${memberError.message}` };
     }
 
+    console.log('User added to department');
+
     // Set as current department
+    console.log('Updating profile with current_department_id:', department.id);
     const { error: updateError } = await supabase
       .from('profiles')
       .update({ current_department_id: department.id })
@@ -112,6 +119,8 @@ export async function createTeam(name: string): Promise<{
       console.error('Failed to update current department:', updateError);
       // Don't fail the entire operation, just log the error
     }
+
+    console.log('Profile updated successfully');
 
     revalidatePath('/teams');
     revalidatePath('/');
@@ -688,5 +697,62 @@ export async function getTeamInvitations(teamId: string): Promise<{
       success: false,
       error: '招待リンクの取得中にエラーが発生しました',
     };
+  }
+}
+
+// ========================================
+// Delete Team (Owner only)
+// ========================================
+
+export async function deleteTeam(teamId: string): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // Get authenticated user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: '認証に失敗しました' };
+    }
+
+    // Check if user is owner of the team
+    const { data: team, error: teamError } = await supabase
+      .from('departments')
+      .select('owner_id')
+      .eq('id', teamId)
+      .single();
+
+    if (teamError || !team) {
+      return { success: false, error: 'チームが見つかりません' };
+    }
+
+    if (team.owner_id !== user.id) {
+      return { success: false, error: 'チームを削除する権限がありません' };
+    }
+
+    // Delete the team (CASCADE will delete related records)
+    const { error: deleteError } = await supabase
+      .from('departments')
+      .delete()
+      .eq('id', teamId);
+
+    if (deleteError) {
+      console.error('Failed to delete team:', deleteError);
+      return { success: false, error: 'チームの削除に失敗しました' };
+    }
+
+    revalidatePath('/teams');
+    revalidatePath('/');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Unexpected error in deleteTeam:', error);
+    return { success: false, error: 'チームの削除中にエラーが発生しました' };
   }
 }
