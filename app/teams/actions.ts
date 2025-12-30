@@ -701,6 +701,75 @@ export async function getTeamInvitations(teamId: string): Promise<{
 }
 
 // ========================================
+// Update Team Name (Owner only)
+// ========================================
+
+export async function updateTeam(
+  teamId: string,
+  name: string
+): Promise<{
+  success: boolean;
+  error?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // Get authenticated user
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: '認証に失敗しました' };
+    }
+
+    // Validate input
+    if (!name || name.trim().length === 0) {
+      return { success: false, error: 'チーム名を入力してください' };
+    }
+
+    if (name.trim().length > 100) {
+      return { success: false, error: 'チーム名は100文字以内で入力してください' };
+    }
+
+    // Check if user is owner of the team
+    const { data: team, error: teamError } = await supabase
+      .from('departments')
+      .select('owner_id')
+      .eq('id', teamId)
+      .single();
+
+    if (teamError || !team) {
+      return { success: false, error: 'チームが見つかりません' };
+    }
+
+    if (team.owner_id !== user.id) {
+      return { success: false, error: 'チーム名を変更する権限がありません' };
+    }
+
+    // Update team name
+    const { error: updateError } = await supabase
+      .from('departments')
+      .update({ name: name.trim() })
+      .eq('id', teamId);
+
+    if (updateError) {
+      console.error('Failed to update team:', updateError);
+      return { success: false, error: 'チーム名の変更に失敗しました' };
+    }
+
+    revalidatePath('/teams');
+    revalidatePath('/');
+
+    return { success: true };
+  } catch (error) {
+    console.error('Unexpected error in updateTeam:', error);
+    return { success: false, error: 'チーム名の変更中にエラーが発生しました' };
+  }
+}
+
+// ========================================
 // Delete Team (Owner only)
 // ========================================
 

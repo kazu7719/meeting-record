@@ -25,22 +25,18 @@ export async function GlobalHeader() {
               >
                 ホーム
               </Link>
-              {user && (
-                <>
-                  <Link
-                    href={ROUTES.MINUTES_LIST}
-                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    議事録一覧
-                  </Link>
-                  <Link
-                    href={ROUTES.TEAMS}
-                    className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    チーム管理
-                  </Link>
-                </>
-              )}
+              <Link
+                href={ROUTES.MINUTES_LIST}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                議事録一覧
+              </Link>
+              <Link
+                href={ROUTES.TEAMS}
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              >
+                チーム管理
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-4">
