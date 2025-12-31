@@ -9,6 +9,7 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -361,44 +362,26 @@ export async function joinTeamByInvitation(token: string): Promise<{
       return { success: false, error: '認証に失敗しました' };
     }
 
-    // Get invitation
-    const { data: invitation, error: invError } = await supabase
-      .from('invitations')
-      .select(
-        `
-        *,
-        departments:department_id (
-          id,
-          name
-        )
-      `
-      )
-      .eq('token', token)
-      .single();
+    // Get invitation (bypasses RLS)
+    const invitationResult = await getInvitationByToken(token);
 
-    if (invError || !invitation) {
-      return { success: false, error: '招待リンクが見つかりません' };
+    if (!invitationResult.success || !invitationResult.data) {
+      return {
+        success: false,
+        error: invitationResult.error || '招待リンクが見つかりません',
+      };
     }
 
+    const { data: invitation, isExpired, isMaxUsesReached } = invitationResult;
+
     // Check if expired
-    if (new Date(invitation.expires_at) < new Date()) {
+    if (isExpired) {
       return { success: false, error: '招待リンクの有効期限が切れています' };
     }
 
     // Check if max uses reached
-    if (
-      invitation.max_uses !== null &&
-      invitation.use_count >= invitation.max_uses
-    ) {
+    if (isMaxUsesReached) {
       return { success: false, error: '招待リンクの利用上限に達しています' };
-    }
-
-    const department = Array.isArray(invitation.departments)
-      ? invitation.departments[0]
-      : invitation.departments;
-
-    if (!department) {
-      return { success: false, error: 'チーム情報が見つかりません' };
     }
 
     // Check if already a member
@@ -406,7 +389,7 @@ export async function joinTeamByInvitation(token: string): Promise<{
       .from('user_departments')
       .select('id')
       .eq('user_id', user.id)
-      .eq('department_id', department.id)
+      .eq('department_id', invitation.department_id)
       .single();
 
     if (existingMembership) {
@@ -418,7 +401,7 @@ export async function joinTeamByInvitation(token: string): Promise<{
       .from('user_departments')
       .insert({
         user_id: user.id,
-        department_id: department.id,
+        department_id: invitation.department_id,
         role: 'member',
       });
 
@@ -438,27 +421,28 @@ export async function joinTeamByInvitation(token: string): Promise<{
       // Don't fail the operation
     }
 
-    // Increment use count atomically using database function
-    const { error: updateError } = await supabase.rpc(
-      'increment_invitation_use_count',
-      { invitation_id_param: invitation.id }
-    );
+    // Increment use count using admin client (bypasses RLS)
+    const adminClient = createAdminClient();
+    const { error: updateError } = await adminClient
+      .from('invitations')
+      .update({ use_count: invitation.use_count + 1 })
+      .eq('id', invitation.id);
 
     if (updateError) {
-      console.error('Failed to update invitation use count:', updateError);
+      console.error('Failed to increment use count:', updateError);
       // Don't fail the operation
     }
 
     // Switch to new team
-    await switchTeam(department.id);
+    await switchTeam(invitation.department_id);
 
     revalidatePath('/teams');
     revalidatePath('/');
 
     return {
       success: true,
-      teamId: department.id,
-      teamName: department.name,
+      teamId: invitation.department_id,
+      teamName: invitation.department.name,
     };
   } catch (error) {
     console.error('Unexpected error in joinTeamByInvitation:', error);
@@ -834,5 +818,206 @@ export async function deleteTeam(teamId: string): Promise<{
   } catch (error) {
     console.error('Unexpected error in deleteTeam:', error);
     return { success: false, error: 'チームの削除中にエラーが発生しました' };
+  }
+}
+
+// ========================================
+// Get Invitation by Token (bypasses RLS)
+// ========================================
+
+export interface InvitationDetails {
+  id: string;
+  department_id: string;
+  token: string;
+  expires_at: string;
+  max_uses: number | null;
+  use_count: number;
+  department: {
+    id: string;
+    name: string;
+  };
+}
+
+export async function getInvitationByToken(
+  token: string
+): Promise<{
+  success: boolean;
+  data?: InvitationDetails;
+  error?: string;
+  isExpired?: boolean;
+  isMaxUsesReached?: boolean;
+}> {
+  try {
+    // Use admin client to bypass RLS
+    const adminClient = createAdminClient();
+
+    const { data: invitation, error } = await adminClient
+      .from('invitations')
+      .select(
+        `
+        id,
+        department_id,
+        token,
+        expires_at,
+        max_uses,
+        use_count,
+        department:departments!department_id (
+          id,
+          name
+        )
+      `
+      )
+      .eq('token', token)
+      .single();
+
+    if (error || !invitation) {
+      console.error('Failed to fetch invitation:', error);
+      return { success: false, error: '招待リンクが見つかりません' };
+    }
+
+    // Check if expired
+    const isExpired = new Date(invitation.expires_at) < new Date();
+
+    // Check if max uses reached
+    const isMaxUsesReached =
+      invitation.max_uses !== null &&
+      invitation.use_count >= invitation.max_uses;
+
+    const department = Array.isArray(invitation.department)
+      ? invitation.department[0]
+      : invitation.department;
+
+    if (!department) {
+      return { success: false, error: 'チーム情報が見つかりません' };
+    }
+
+    return {
+      success: true,
+      data: {
+        id: invitation.id,
+        department_id: invitation.department_id,
+        token: invitation.token,
+        expires_at: invitation.expires_at,
+        max_uses: invitation.max_uses,
+        use_count: invitation.use_count,
+        department: {
+          id: department.id,
+          name: department.name,
+        },
+      },
+      isExpired,
+      isMaxUsesReached,
+    };
+  } catch (error) {
+    console.error('Unexpected error in getInvitationByToken:', error);
+    return { success: false, error: '招待リンクの取得に失敗しました' };
+  }
+}
+
+// ========================================
+// Accept Invitation
+// ========================================
+
+export async function acceptInvitation(token: string): Promise<{
+  success: boolean;
+  error?: string;
+  teamId?: string;
+}> {
+  try {
+    const supabase = await createClient();
+
+    // Check authentication
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return { success: false, error: '認証に失敗しました' };
+    }
+
+    // Get invitation details (bypasses RLS)
+    const invitationResult = await getInvitationByToken(token);
+
+    if (!invitationResult.success || !invitationResult.data) {
+      return {
+        success: false,
+        error: invitationResult.error || '招待リンクが見つかりません',
+      };
+    }
+
+    const { data: invitation, isExpired, isMaxUsesReached } = invitationResult;
+
+    // Check if expired
+    if (isExpired) {
+      return { success: false, error: '招待リンクの有効期限が切れています' };
+    }
+
+    // Check if max uses reached
+    if (isMaxUsesReached) {
+      return { success: false, error: '招待リンクの使用回数が上限に達しています' };
+    }
+
+    // Check if user is already a member
+    const { data: existingMembership } = await supabase
+      .from('user_departments')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('department_id', invitation.department_id)
+      .single();
+
+    if (existingMembership) {
+      return {
+        success: false,
+        error: 'すでにこのチームのメンバーです',
+      };
+    }
+
+    // Add user to team
+    const { error: insertError } = await supabase
+      .from('user_departments')
+      .insert({
+        user_id: user.id,
+        department_id: invitation.department_id,
+        role: 'member',
+      });
+
+    if (insertError) {
+      console.error('Failed to add user to team:', insertError);
+      return { success: false, error: 'チームへの参加に失敗しました' };
+    }
+
+    // Log invitation use
+    const { error: logError } = await supabase
+      .from('invitation_uses')
+      .insert({
+        invitation_id: invitation.id,
+        user_id: user.id,
+      });
+
+    if (logError) {
+      console.error('Failed to log invitation use:', logError);
+      // Continue anyway - not critical
+    }
+
+    // Increment use count using admin client (bypasses RLS)
+    const adminClient = createAdminClient();
+    const { error: incrementError } = await adminClient
+      .from('invitations')
+      .update({ use_count: invitation.use_count + 1 })
+      .eq('id', invitation.id);
+
+    if (incrementError) {
+      console.error('Failed to increment use count:', incrementError);
+      // Continue anyway - not critical
+    }
+
+    revalidatePath('/teams');
+    revalidatePath('/');
+
+    return { success: true, teamId: invitation.department_id };
+  } catch (error) {
+    console.error('Unexpected error in acceptInvitation:', error);
+    return { success: false, error: '招待の受け入れに失敗しました' };
   }
 }

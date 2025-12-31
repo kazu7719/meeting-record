@@ -69,65 +69,65 @@ export function MinuteForm({ teams, currentTeamId }: MinuteFormProps) {
 
   return (
     <div className="space-y-6">
-      {/* チーム選択 */}
-      <div>
-        <Label htmlFor="team">
-          保存先チーム <span className="text-red-500">*</span>
-        </Label>
-        <select
-          id="team"
-          value={departmentId}
-          onChange={(e) => setDepartmentId(e.target.value)}
-          className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
-          required
-        >
-          <option value="" disabled>
-            チームを選択してください
-          </option>
-          {teams.map((team) => (
-            <option key={team.id} value={team.id}>
-              {team.name}
-              {team.id === currentTeamId ? ' (現在のチーム)' : ''}
+      {/* 基本情報エリア */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+        {/* チーム選択 */}
+        <div>
+          <Label htmlFor="team">
+            保存先チーム <span className="text-red-500">*</span>
+          </Label>
+          <select
+            id="team"
+            value={departmentId}
+            onChange={(e) => setDepartmentId(e.target.value)}
+            className="mt-1 w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
+            required
+          >
+            <option value="" disabled>
+              チームを選択してください
             </option>
-          ))}
-        </select>
-        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-          選択したチームのメンバーが議事録を閲覧できます
-        </p>
-      </div>
+            {teams.map((team) => (
+              <option key={team.id} value={team.id}>
+                {team.name}
+                {team.id === currentTeamId ? ' (現在のチーム)' : ''}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      {/* タイトル */}
-      <div>
-        <Label htmlFor="title">
-          タイトル <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="例: 開発進捗定例"
-          className="mt-1"
-          required
-        />
-      </div>
+        {/* タイトル */}
+        <div>
+          <Label htmlFor="title">
+            タイトル <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="例: 開発進捗定例"
+            className="mt-1"
+            required
+          />
+        </div>
 
-      {/* 会議日 */}
-      <div>
-        <Label htmlFor="meeting-date">会議日（任意）</Label>
-        <Input
-          id="meeting-date"
-          type="date"
-          value={meetingDate}
-          onChange={(e) => setMeetingDate(e.target.value)}
-          className="mt-1"
-        />
+        {/* 会議日 */}
+        <div>
+          <Label htmlFor="meeting-date">会議日（任意）</Label>
+          <Input
+            id="meeting-date"
+            type="date"
+            value={meetingDate}
+            onChange={(e) => setMeetingDate(e.target.value)}
+            className="mt-1"
+          />
+        </div>
       </div>
 
       {/* 議事録本文 */}
       <div>
-        <div className="flex justify-between items-center mb-1">
-          <Label htmlFor="raw-text">
+        <div className="flex justify-between items-center mb-2">
+          <Label htmlFor="raw-text" className="text-lg font-semibold">
             議事録本文 <span className="text-red-500">*</span>
           </Label>
           <span
@@ -145,16 +145,19 @@ export function MinuteForm({ teams, currentTeamId }: MinuteFormProps) {
           id="raw-text"
           value={rawText}
           onChange={(e) => setRawText(e.target.value)}
-          className="w-full h-96 p-4 border rounded-lg resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
+          className="w-full h-[600px] p-4 border-2 border-gray-300 rounded-lg resize-y font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 transition-colors"
           placeholder="会議の議事録テキストを貼り付けてください..."
           required
         />
         {isOverLimit && (
-          <p className="text-red-500 text-sm mt-1">
-            文字数が上限を超えています。{MAX_CHARS.toLocaleString()}
+          <p className="text-red-500 text-sm mt-2 font-medium">
+            ⚠️ 文字数が上限を超えています。{MAX_CHARS.toLocaleString()}
             文字以内に収めてください。
           </p>
         )}
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          ※ テキストエリアは上下にドラッグしてサイズを調整できます
+        </p>
       </div>
 
       {/* エラーメッセージ */}

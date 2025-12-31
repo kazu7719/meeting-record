@@ -63,38 +63,41 @@ export function MinuteEditForm({
 
   return (
     <div className="space-y-6">
-      {/* タイトル */}
-      <div>
-        <Label htmlFor="title">
-          タイトル <span className="text-red-500">*</span>
-        </Label>
-        <Input
-          id="title"
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="例: 開発進捗定例"
-          className="mt-1"
-          required
-        />
-      </div>
+      {/* 基本情報エリア */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+        {/* タイトル */}
+        <div>
+          <Label htmlFor="title">
+            タイトル <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="title"
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="例: 開発進捗定例"
+            className="mt-1"
+            required
+          />
+        </div>
 
-      {/* 会議日 */}
-      <div>
-        <Label htmlFor="meeting-date">会議日（任意）</Label>
-        <Input
-          id="meeting-date"
-          type="date"
-          value={meetingDate}
-          onChange={(e) => setMeetingDate(e.target.value)}
-          className="mt-1"
-        />
+        {/* 会議日 */}
+        <div>
+          <Label htmlFor="meeting-date">会議日（任意）</Label>
+          <Input
+            id="meeting-date"
+            type="date"
+            value={meetingDate}
+            onChange={(e) => setMeetingDate(e.target.value)}
+            className="mt-1"
+          />
+        </div>
       </div>
 
       {/* 議事録本文 */}
       <div>
-        <div className="flex justify-between items-center mb-1">
-          <Label htmlFor="raw-text">
+        <div className="flex justify-between items-center mb-2">
+          <Label htmlFor="raw-text" className="text-lg font-semibold">
             議事録本文 <span className="text-red-500">*</span>
           </Label>
           <span
@@ -112,16 +115,19 @@ export function MinuteEditForm({
           id="raw-text"
           value={rawText}
           onChange={(e) => setRawText(e.target.value)}
-          className="w-full h-96 p-4 border rounded-lg resize-none font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:border-gray-600"
+          className="w-full h-[600px] p-4 border-2 border-gray-300 rounded-lg resize-y font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 transition-colors"
           placeholder="会議の議事録テキストを貼り付けてください..."
           required
         />
         {isOverLimit && (
-          <p className="text-red-500 text-sm mt-1">
-            文字数が上限を超えています。{MAX_CHARS.toLocaleString()}
+          <p className="text-red-500 text-sm mt-2 font-medium">
+            ⚠️ 文字数が上限を超えています。{MAX_CHARS.toLocaleString()}
             文字以内に収めてください。
           </p>
         )}
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          ※ テキストエリアは上下にドラッグしてサイズを調整できます
+        </p>
       </div>
 
       {/* エラーメッセージ */}
