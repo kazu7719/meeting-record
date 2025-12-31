@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { createClient } from '@/lib/supabase/client';
+import { logout } from '@/app/auth/actions';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { ROUTES } from '@/lib/routes';
@@ -14,11 +14,15 @@ export function LogoutButton() {
   const handleLogout = async () => {
     setIsLoading(true);
     setError(null);
-    const supabase = createClient();
 
     try {
-      const { error: signOutError } = await supabase.auth.signOut();
-      if (signOutError) throw signOutError;
+      const result = await logout();
+
+      if (!result.success) {
+        setError(result.error || 'ログアウトに失敗しました');
+        setIsLoading(false);
+        return;
+      }
 
       router.push(ROUTES.HOME);
       router.refresh();

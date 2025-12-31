@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 
 /**
  * profiles自動作成機能
@@ -57,4 +58,27 @@ export async function ensureProfileExists(): Promise<void> {
       throw insertError;
     }
   }
+
+  // Revalidate the entire app to update header and other server components
+  revalidatePath('/', 'layout');
+}
+
+/**
+ * ログアウト処理
+ * ログアウト後にページ全体を再検証してヘッダーを更新
+ */
+export async function logout(): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient();
+
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    console.error('Logout error:', error);
+    return { success: false, error: 'ログアウトに失敗しました' };
+  }
+
+  // Revalidate the entire app to update header and other server components
+  revalidatePath('/', 'layout');
+
+  return { success: true };
 }

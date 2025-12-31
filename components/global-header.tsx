@@ -4,6 +4,9 @@ import { Button } from '@/components/ui/button';
 import { LogoutButton } from '@/components/logout-button';
 import { ROUTES } from '@/lib/routes';
 
+// Force this component to be dynamic (no caching)
+export const dynamic = 'force-dynamic';
+
 export async function GlobalHeader() {
   const supabase = await createClient();
   const {
