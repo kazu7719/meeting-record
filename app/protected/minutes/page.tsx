@@ -45,7 +45,7 @@ export default async function MinutesListPage({
   // Fetch minutes list with search conditions (RLS will ensure only accessible minutes are returned)
   let query = supabase
     .from('minutes')
-    .select('id, title, meeting_date, created_at, raw_text, departments:department_id(name)')
+    .select('id, title, meeting_date, created_at, raw_text')
     .order('created_at', { ascending: false });
 
   // 現在のチームでフィルタリング
@@ -178,40 +178,33 @@ export default async function MinutesListPage({
         </div>
       ) : (
         <div className="grid gap-3 sm:gap-4">
-          {minutes.map((minute) => {
-            // departments は配列またはオブジェクトのいずれかで返される
-            const department = Array.isArray(minute.departments)
-              ? minute.departments[0]
-              : minute.departments;
-
-            return (
-              <Link
-                key={minute.id}
-                href={`/protected/minutes/${minute.id}`}
-                className="block border rounded-lg p-4 sm:p-6 bg-white dark:bg-gray-800 hover:shadow-lg transition-shadow"
-              >
-                <h2 className="text-lg sm:text-xl font-semibold mb-2">{minute.title}</h2>
-                <div className="flex flex-col sm:flex-row sm:gap-4 gap-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                  {department?.name && (
-                    <div>
-                      <span className="font-medium">チーム:</span>{' '}
-                      {department.name}
-                    </div>
-                  )}
-                  {minute.meeting_date && (
-                    <div>
-                      <span className="font-medium">会議日:</span>{' '}
-                      {new Date(minute.meeting_date).toLocaleDateString('ja-JP')}
-                    </div>
-                  )}
+          {minutes.map((minute) => (
+            <Link
+              key={minute.id}
+              href={`/protected/minutes/${minute.id}`}
+              className="block border rounded-lg p-4 sm:p-6 bg-white dark:bg-gray-800 hover:shadow-lg transition-shadow"
+            >
+              <h2 className="text-lg sm:text-xl font-semibold mb-2">{minute.title}</h2>
+              <div className="flex flex-col sm:flex-row sm:gap-4 gap-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+                {currentTeam?.name && (
                   <div>
-                    <span className="font-medium">作成日:</span>{' '}
-                    {new Date(minute.created_at).toLocaleDateString('ja-JP')}
+                    <span className="font-medium">チーム:</span>{' '}
+                    {currentTeam.name}
                   </div>
+                )}
+                {minute.meeting_date && (
+                  <div>
+                    <span className="font-medium">会議日:</span>{' '}
+                    {new Date(minute.meeting_date).toLocaleDateString('ja-JP')}
+                  </div>
+                )}
+                <div>
+                  <span className="font-medium">作成日:</span>{' '}
+                  {new Date(minute.created_at).toLocaleDateString('ja-JP')}
                 </div>
-              </Link>
-            );
-          })}
+              </div>
+            </Link>
+          ))}
         </div>
       )}
     </div>

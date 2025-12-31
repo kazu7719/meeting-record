@@ -106,7 +106,6 @@ describe('MinutesListPage', () => {
         meeting_date: '2025-01-15',
         created_at: '2025-01-15T10:00:00Z',
         raw_text: 'テスト議事録1',
-        departments: { name: 'テストチーム' },
       },
       {
         id: '2',
@@ -114,7 +113,6 @@ describe('MinutesListPage', () => {
         meeting_date: null,
         created_at: '2025-01-14T10:00:00Z',
         raw_text: 'テスト議事録2',
-        departments: { name: 'テストチーム' },
       },
     ];
 
@@ -152,7 +150,6 @@ describe('MinutesListPage', () => {
         meeting_date: '2025-01-15',
         created_at: '2025-01-15T10:00:00Z',
         raw_text: 'テスト議事録',
-        departments: { name: 'テストチーム' },
       },
     ];
 
