@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { SearchForm } from '@/components/search-form';
+import { UsageGuide } from '@/components/usage-guide';
 import { Button } from '@/components/ui/button';
 import { ROUTES } from '@/lib/routes';
 
@@ -64,6 +65,15 @@ export default async function MinutesListPage({
 
   if (minutesError) {
     console.error('Failed to fetch minutes:', minutesError);
+
+    // エラーの種類に応じたメッセージ
+    const errorMessage =
+      minutesError.code === 'PGRST116'
+        ? 'アクセス権限がありません。ログイン状態を確認してください。'
+        : minutesError.message?.includes('network')
+          ? 'ネットワークエラーが発生しました。インターネット接続を確認してください。'
+          : '議事録の取得に失敗しました。しばらく経ってから再度お試しください。';
+
     return (
       <div className="max-w-6xl mx-auto p-4 sm:p-6">
         <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -74,9 +84,13 @@ export default async function MinutesListPage({
             <Link href={ROUTES.MINUTES_NEW}>新規議事録作成</Link>
           </Button>
         </div>
-        <div className="text-center py-12 text-red-600 dark:text-red-400">
-          <p className="mb-4">議事録の取得に失敗しました。</p>
-          <p className="text-sm">しばらく経ってから再度お試しください。</p>
+        <div className="text-center py-12" role="alert" aria-live="polite">
+          <p className="mb-4 text-red-600 dark:text-red-400 font-semibold">
+            {errorMessage}
+          </p>
+          <Button asChild className="mt-4">
+            <Link href={ROUTES.MINUTES_NEW}>新しい議事録を作成する</Link>
+          </Button>
         </div>
       </div>
     );
@@ -98,6 +112,9 @@ export default async function MinutesListPage({
           <Link href={ROUTES.MINUTES_NEW}>新規議事録作成</Link>
         </Button>
       </div>
+
+      {/* 使い方・注意事項 */}
+      <UsageGuide />
 
       {/* 検索フォーム */}
       <SearchForm />
