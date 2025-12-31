@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { LogoutButton } from '@/components/logout-button';
+import { MobileNav } from '@/components/mobile-nav';
 import { ROUTES } from '@/lib/routes';
 
 // Force this component to be dynamic (no caching)
@@ -43,23 +44,32 @@ export async function GlobalHeader() {
             </nav>
           </div>
           <div className="flex items-center gap-4">
-            {user ? (
-              <>
-                <span className="text-sm text-muted-foreground">
-                  {user.email}
-                </span>
-                <LogoutButton />
-              </>
-            ) : (
-              <>
-                <Button asChild variant="ghost" size="sm">
-                  <Link href={ROUTES.LOGIN}>ログイン</Link>
-                </Button>
-                <Button asChild size="sm">
-                  <Link href={ROUTES.SIGNUP}>サインアップ</Link>
-                </Button>
-              </>
-            )}
+            {/* デスクトップ表示 */}
+            <div className="hidden md:flex items-center gap-4">
+              {user ? (
+                <>
+                  <span className="text-sm text-muted-foreground">
+                    {user.email}
+                  </span>
+                  <LogoutButton />
+                </>
+              ) : (
+                <>
+                  <Button asChild variant="ghost" size="sm">
+                    <Link href={ROUTES.LOGIN}>ログイン</Link>
+                  </Button>
+                  <Button asChild size="sm">
+                    <Link href={ROUTES.SIGNUP}>サインアップ</Link>
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* モバイルナビゲーション */}
+            <MobileNav
+              isLoggedIn={!!user}
+              userEmail={user?.email}
+            />
           </div>
         </div>
       </div>

@@ -40,10 +40,10 @@ export default async function EditMinutePage({ params }: EditMinutePageProps) {
   }
 
   return (
-    <div className="max-w-7xl mx-auto p-6">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">議事録編集</h1>
-        <p className="text-gray-600 dark:text-gray-400">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold mb-2">議事録編集</h1>
+        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
           議事録の内容を編集します
         </p>
       </div>

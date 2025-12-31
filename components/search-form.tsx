@@ -61,16 +61,16 @@ export function SearchForm() {
     searchParams.get('keyword');
 
   return (
-    <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
-      <h2 className="text-lg font-semibold mb-4">検索条件</h2>
+    <div className="mb-6 p-3 sm:p-4 bg-gray-50 dark:bg-gray-800 rounded-md">
+      <h2 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4">検索条件</h2>
 
       {/* 検索条件表示エリア */}
       {hasSearchConditions && (
-        <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-          <p className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
+        <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+          <p className="text-xs sm:text-sm font-medium text-blue-900 dark:text-blue-100 mb-2">
             現在の検索条件:
           </p>
-          <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+          <ul className="text-xs sm:text-sm text-blue-800 dark:text-blue-200 space-y-1">
             {searchParams.get('title') && (
               <li>タイトル: 「{searchParams.get('title')}」</li>
             )}
@@ -87,10 +87,10 @@ export function SearchForm() {
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {/* タイトル検索 */}
         <div>
-          <Label htmlFor="search-title" className="text-sm font-medium">
+          <Label htmlFor="search-title" className="text-xs sm:text-sm font-medium">
             タイトル（部分一致）
           </Label>
           <Input
@@ -99,14 +99,14 @@ export function SearchForm() {
             placeholder="例: 開発進捗"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="mt-1"
+            className="mt-1 text-sm"
           />
         </div>
 
         {/* 会議日範囲検索 */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           <div>
-            <Label htmlFor="search-date-from" className="text-sm font-medium">
+            <Label htmlFor="search-date-from" className="text-xs sm:text-sm font-medium">
               会議日（開始）
             </Label>
             <Input
@@ -114,11 +114,11 @@ export function SearchForm() {
               type="date"
               value={dateFrom}
               onChange={(e) => setDateFrom(e.target.value)}
-              className="mt-1"
+              className="mt-1 text-sm"
             />
           </div>
           <div>
-            <Label htmlFor="search-date-to" className="text-sm font-medium">
+            <Label htmlFor="search-date-to" className="text-xs sm:text-sm font-medium">
               会議日（終了）
             </Label>
             <Input
@@ -126,14 +126,14 @@ export function SearchForm() {
               type="date"
               value={dateTo}
               onChange={(e) => setDateTo(e.target.value)}
-              className="mt-1"
+              className="mt-1 text-sm"
             />
           </div>
         </div>
 
         {/* キーワード検索 */}
         <div>
-          <Label htmlFor="search-keyword" className="text-sm font-medium">
+          <Label htmlFor="search-keyword" className="text-xs sm:text-sm font-medium">
             本文キーワード（部分一致）
           </Label>
           <Input
@@ -142,7 +142,7 @@ export function SearchForm() {
             placeholder="例: ログイン機能"
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
-            className="mt-1"
+            className="mt-1 text-sm"
           />
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
             議事録本文（raw_text）から検索します
@@ -150,11 +150,11 @@ export function SearchForm() {
         </div>
 
         {/* ボタンエリア */}
-        <div className="flex gap-3">
-          <Button variant="default" onClick={handleSearch}>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <Button variant="default" onClick={handleSearch} className="w-full sm:w-auto">
             検索
           </Button>
-          <Button variant="outline" onClick={handleClear}>
+          <Button variant="outline" onClick={handleClear} className="w-full sm:w-auto">
             クリア
           </Button>
         </div>

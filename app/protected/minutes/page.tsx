@@ -65,12 +65,12 @@ export default async function MinutesListPage({
   if (minutesError) {
     console.error('Failed to fetch minutes:', minutesError);
     return (
-      <div className="max-w-6xl mx-auto p-6">
-        <div className="mb-8 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto p-4 sm:p-6">
+        <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold mb-2">議事録一覧</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-2">議事録一覧</h1>
           </div>
-          <Button asChild aria-label="新しい議事録を作成">
+          <Button asChild aria-label="新しい議事録を作成" className="w-full sm:w-auto">
             <Link href={ROUTES.MINUTES_NEW}>新規議事録作成</Link>
           </Button>
         </div>
@@ -86,15 +86,15 @@ export default async function MinutesListPage({
   const hasSearchConditions = title || dateFrom || dateTo || keyword;
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6">
+      <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold mb-2">議事録一覧</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">議事録一覧</h1>
+          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
             保存された議事録を閲覧できます
           </p>
         </div>
-        <Button asChild aria-label="新しい議事録を作成">
+        <Button asChild aria-label="新しい議事録を作成" className="w-full sm:w-auto">
           <Link href={ROUTES.MINUTES_NEW}>新規議事録作成</Link>
         </Button>
       </div>
@@ -126,15 +126,15 @@ export default async function MinutesListPage({
           )}
         </div>
       ) : (
-        <div className="grid gap-4">
+        <div className="grid gap-3 sm:gap-4">
           {minutes.map((minute) => (
             <Link
               key={minute.id}
               href={`/protected/minutes/${minute.id}`}
-              className="block border rounded-lg p-6 bg-white dark:bg-gray-800 hover:shadow-lg transition-shadow"
+              className="block border rounded-lg p-4 sm:p-6 bg-white dark:bg-gray-800 hover:shadow-lg transition-shadow"
             >
-              <h2 className="text-xl font-semibold mb-2">{minute.title}</h2>
-              <div className="flex gap-4 text-sm text-gray-600 dark:text-gray-400">
+              <h2 className="text-lg sm:text-xl font-semibold mb-2">{minute.title}</h2>
+              <div className="flex flex-col sm:flex-row sm:gap-4 gap-1 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 {minute.meeting_date && (
                   <div>
                     <span className="font-medium">会議日:</span>{' '}
