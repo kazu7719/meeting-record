@@ -31,6 +31,24 @@ jest.mock('@/lib/supabase/server', () => ({
   })),
 }));
 
+// Mock getCurrentTeam
+jest.mock('@/app/teams/actions', () => ({
+  getCurrentTeam: jest.fn(() =>
+    Promise.resolve({
+      success: true,
+      team: {
+        id: 'team-1',
+        name: 'テストチーム',
+        owner_id: 'user-1',
+        created_at: '2025-01-01T00:00:00Z',
+        updated_at: '2025-01-01T00:00:00Z',
+        role: 'owner',
+        joined_at: '2025-01-01T00:00:00Z',
+      },
+    })
+  ),
+}));
+
 describe('MinutesListPage', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -57,12 +75,13 @@ describe('MinutesListPage', () => {
 
     const mockQuery = {
       select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
       order: jest.fn().mockReturnThis(),
       ilike: jest.fn().mockReturnThis(),
       gte: jest.fn().mockReturnThis(),
       lte: jest.fn().mockReturnThis(),
     };
-    mockQuery.order.mockResolvedValue({
+    mockQuery.eq.mockResolvedValue({
       data: [],
       error: null,
     });
@@ -87,6 +106,7 @@ describe('MinutesListPage', () => {
         meeting_date: '2025-01-15',
         created_at: '2025-01-15T10:00:00Z',
         raw_text: 'テスト議事録1',
+        departments: { name: 'テストチーム' },
       },
       {
         id: '2',
@@ -94,17 +114,19 @@ describe('MinutesListPage', () => {
         meeting_date: null,
         created_at: '2025-01-14T10:00:00Z',
         raw_text: 'テスト議事録2',
+        departments: { name: 'テストチーム' },
       },
     ];
 
     const mockQuery = {
       select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
       order: jest.fn().mockReturnThis(),
       ilike: jest.fn().mockReturnThis(),
       gte: jest.fn().mockReturnThis(),
       lte: jest.fn().mockReturnThis(),
     };
-    mockQuery.order.mockResolvedValue({
+    mockQuery.eq.mockResolvedValue({
       data: mockMinutes,
       error: null,
     });
@@ -130,17 +152,19 @@ describe('MinutesListPage', () => {
         meeting_date: '2025-01-15',
         created_at: '2025-01-15T10:00:00Z',
         raw_text: 'テスト議事録',
+        departments: { name: 'テストチーム' },
       },
     ];
 
     const mockQuery = {
       select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
       order: jest.fn().mockReturnThis(),
       ilike: jest.fn().mockReturnThis(),
       gte: jest.fn().mockReturnThis(),
       lte: jest.fn().mockReturnThis(),
     };
-    mockQuery.order.mockResolvedValue({
+    mockQuery.eq.mockResolvedValue({
       data: mockMinutes,
       error: null,
     });
@@ -161,12 +185,13 @@ describe('MinutesListPage', () => {
 
     const mockQuery = {
       select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
       order: jest.fn().mockReturnThis(),
       ilike: jest.fn().mockReturnThis(),
       gte: jest.fn().mockReturnThis(),
       lte: jest.fn().mockReturnThis(),
     };
-    mockQuery.order.mockResolvedValue({
+    mockQuery.eq.mockResolvedValue({
       data: [],
       error: null,
     });

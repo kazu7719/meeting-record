@@ -23,9 +23,11 @@ export function UsageGuide() {
           </span>
           <span>補足</span>
         </h3>
-        <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-300">
-          要約とアクションプランは、保存後の議事録画面で各ボタンを押すことで生成されます
-        </p>
+        <ul className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 space-y-1 list-disc list-inside">
+          <li>要約とアクションプランは、保存後の議事録画面で各ボタンを押すことで生成されます</li>
+          <li>議事録一覧には、チーム管理で「現在のチーム」に選択したチームの議事録が表示されます</li>
+          <li>別のチームの議事録を見たい場合は、チーム管理でチームを切り替えてください</li>
+        </ul>
       </div>
 
       <div className="p-3 sm:p-4 bg-amber-50 dark:bg-amber-900/20 rounded border border-amber-200 dark:border-amber-800">
