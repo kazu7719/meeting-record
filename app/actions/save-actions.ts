@@ -1,6 +1,7 @@
 'use server';
 
 import { createClient } from '@/lib/supabase/server';
+import { revalidatePath } from 'next/cache';
 import type { ActionItem } from './extract-actions';
 
 interface SaveActionsInput {
@@ -130,6 +131,9 @@ export async function saveActions(
         error: 'アクション項目の保存に失敗しました',
       };
     }
+
+    // キャッシュを無効化して最新データを取得できるようにする
+    revalidatePath(`/protected/minutes/${minuteId}`);
 
     return {
       success: true,

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from './ui/button';
 import { generateSummary } from '@/app/actions/generate-summary';
 import { extractActions } from '@/app/actions/extract-actions';
@@ -32,6 +33,7 @@ export function MinuteDetailAI({
   initialActionItems,
   isOwner,
 }: MinuteDetailAIProps) {
+  const router = useRouter();
   const [summary, setSummary] = useState(initialSummary);
   const [actionItems, setActionItems] = useState(initialActionItems);
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
@@ -83,8 +85,8 @@ export function MinuteDetailAI({
           if (!saveResult.success) {
             setActionsError(saveResult.error || 'アクションアイテムの保存に失敗しました');
           } else {
-            // 保存成功後、ページをリロードして最新のデータを取得
-            window.location.reload();
+            // 保存成功後、Next.jsのキャッシュを更新して最新のデータを取得
+            router.refresh();
           }
         }
       } else {

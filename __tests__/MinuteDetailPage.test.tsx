@@ -4,6 +4,11 @@ import '@testing-library/jest-dom';
 // Since MinuteDetailPage is a Server Component, testing it requires special setup.
 // For now, we test the expected behavior through component contracts.
 
+// Mock next/cache
+jest.mock('next/cache', () => ({
+  revalidatePath: jest.fn(),
+}));
+
 describe('MinuteDetailPage', () => {
   test('議事録詳細ページコンポーネントが存在する', async () => {
     // Verify that the page component exists
