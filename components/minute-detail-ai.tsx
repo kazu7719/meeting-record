@@ -161,9 +161,7 @@ export function MinuteDetailAI({
                   </div>
                   <div>
                     <span className="font-medium">期限:</span>{' '}
-                    {item.due_at
-                      ? new Date(item.due_at).toLocaleDateString('ja-JP')
-                      : '未定'}
+                    {item.due_at || '未定'}
                   </div>
                 </div>
                 {item.note && (

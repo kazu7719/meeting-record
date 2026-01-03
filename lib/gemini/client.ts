@@ -59,16 +59,24 @@ export function getActionExtractionPrompt(rawText: string): string {
    - evidence: 根拠引用（文字列、必須）
 3. evidence は必ず議事録からの直接引用であること（創作禁止）
 4. 担当者や期限が議事録に明記されていない場合は null にすること（推測禁止）
-5. 議事録にアクション項目が存在しない場合は空配列 [] を返すこと
+5. due_at は議事録に書かれている表現をそのまま使用すること（例: "明日まで", "今週金曜日まで", "来週中"）。日付への変換はしないこと
+6. 議事録にアクション項目が存在しない場合は空配列 [] を返すこと
 
 【出力例】
 [
   {
     "task_content": "ログイン機能の実装",
     "assignee_name": "田中",
-    "due_at": null,
+    "due_at": "今週金曜日まで",
     "note": "UI/UXレビュー後に着手",
-    "evidence": "田中：ログイン機能を今週中に実装します"
+    "evidence": "田中：ログイン機能を今週金曜日までに実装します"
+  },
+  {
+    "task_content": "デザインレビュー",
+    "assignee_name": "佐藤",
+    "due_at": "明日まで",
+    "note": null,
+    "evidence": "佐藤：デザインレビューを明日までに完了させます"
   }
 ]
 
