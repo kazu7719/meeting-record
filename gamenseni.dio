@@ -1,0 +1,94 @@
+<mxfile host="65bd71144e">
+    <diagram id="zh1eBMuwm8-589rZaDfW" name="ページ1">
+        <mxGraphModel dx="1400" dy="515" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+            <root>
+                <mxCell id="0"/>
+                <mxCell id="1" parent="0"/>
+                <mxCell id="2" value="トップページ" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="-10" y="90" width="140" height="60" as="geometry"/>
+                </mxCell>
+                <mxCell id="3" value="ユーザーログインページ&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="100" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="4" value="ユーザー新規登録ページ" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="160" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="5" value="&lt;span style=&quot;background-color: transparent;&quot;&gt;&lt;font color=&quot;#000000&quot;&gt;議事録&lt;/font&gt;一覧ページ&lt;/span&gt;&lt;div&gt;&lt;p style=&quot;margin: 0px; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-variant-position: normal; font-stretch: normal; font-size: 11px; line-height: normal; font-family: Menlo; color: rgb(162, 168, 247); text-align: start;&quot; class=&quot;p1&quot;&gt;&lt;span style=&quot;font-variant-ligatures: no-common-ligatures;&quot; class=&quot;s1&quot;&gt;/protected/minutes&lt;/span&gt;&lt;span style=&quot;font-variant-ligatures: no-common-ligatures; color: rgb(0, 0, 0);&quot; class=&quot;s2&quot;&gt;&lt;span class=&quot;Apple-converted-space&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="230" width="140" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="6" value="チーム管理ページ&lt;div&gt;&lt;p style=&quot;margin: 0px; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-variant-position: normal; font-stretch: normal; font-size: 11px; line-height: normal; font-family: Menlo; color: rgb(162, 168, 247); text-align: start;&quot; class=&quot;p1&quot;&gt;&lt;span style=&quot;font-variant-ligatures: no-common-ligatures;&quot; class=&quot;s1&quot;&gt;　　/teams&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="170" y="390" width="140" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="12" value="議事録編集ページ&lt;div&gt;&lt;p style=&quot;margin: 0px; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-variant-position: normal; font-stretch: normal; font-size: 11px; line-height: normal; font-family: Menlo; color: rgb(162, 168, 247); text-align: start;&quot; class=&quot;p1&quot;&gt;&lt;span style=&quot;font-variant-ligatures: no-common-ligatures;&quot; class=&quot;s1&quot;&gt;/protected/minutes/:id/edit&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="590" y="240" width="190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="13" value="議事録新規登録ページ&lt;div&gt;&lt;p style=&quot;margin: 0px; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-variant-position: normal; font-stretch: normal; font-size: 11px; line-height: normal; font-family: Menlo; color: rgb(162, 168, 247); text-align: start;&quot; class=&quot;p1&quot;&gt;&lt;span style=&quot;font-variant-ligatures: no-common-ligatures;&quot; class=&quot;s1&quot;&gt;/protected/minutes/new&lt;/span&gt;&lt;span style=&quot;font-variant-ligatures: no-common-ligatures; color: rgb(0, 0, 0);&quot; class=&quot;s2&quot;&gt;&lt;span class=&quot;Apple-converted-space&quot;&gt;&amp;nbsp;&lt;/span&gt;&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="200" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="14" value="議事録詳細ページ&lt;div&gt;&lt;p style=&quot;margin: 0px; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-variant-position: normal; font-stretch: normal; font-size: 11px; line-height: normal; font-family: Menlo; color: rgb(162, 168, 247); text-align: start;&quot; class=&quot;p1&quot;&gt;&lt;span style=&quot;font-variant-ligatures: no-common-ligatures;&quot; class=&quot;s1&quot;&gt;/protected/minutes/:id&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="380" y="270" width="170" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="15" value="議事録削除&lt;div&gt;(ページはなし)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="590" y="310" width="190" height="40" as="geometry"/>
+                </mxCell>
+                <mxCell id="20" value="チーム招待ページ&lt;div&gt;&lt;p style=&quot;margin: 0px; font-variant-numeric: normal; font-variant-east-asian: normal; font-variant-alternates: normal; font-kerning: auto; font-optical-sizing: auto; font-feature-settings: normal; font-variation-settings: normal; font-variant-position: normal; font-stretch: normal; font-size: 11px; line-height: normal; font-family: Menlo; color: rgb(162, 168, 247); text-align: start;&quot; class=&quot;p1&quot;&gt;&lt;span style=&quot;font-variant-ligatures: no-common-ligatures;&quot; class=&quot;s1&quot;&gt;/invite?token=xxx&lt;/span&gt;&lt;/p&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" parent="1" vertex="1">
+                    <mxGeometry x="329" y="390" width="170" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="27" value="" style="endArrow=none;html=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" parent="1" source="2" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="120" y="170" as="sourcePoint"/>
+                        <mxPoint x="170" y="120" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="29" value="" style="endArrow=none;html=1;" parent="1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="150" y="120" as="sourcePoint"/>
+                        <mxPoint x="150" y="420" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="30" value="" style="endArrow=none;html=1;" parent="1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="150" y="180" as="sourcePoint"/>
+                        <mxPoint x="170" y="180" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="31" value="" style="endArrow=none;html=1;" parent="1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="150" y="249.5" as="sourcePoint"/>
+                        <mxPoint x="170" y="249.5" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="32" value="" style="endArrow=none;html=1;" parent="1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="150" y="420" as="sourcePoint"/>
+                        <mxPoint x="170" y="420" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="34" value="" style="shape=partialRectangle;whiteSpace=wrap;html=1;bottom=1;right=1;left=1;top=0;fillColor=none;routingCenterX=-0.5;rotation=90;" parent="1" vertex="1">
+                    <mxGeometry x="315" y="235" width="80" height="50" as="geometry"/>
+                </mxCell>
+                <mxCell id="39" value="" style="endArrow=none;html=1;" parent="1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="310" y="249.5" as="sourcePoint"/>
+                        <mxPoint x="330" y="249.5" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="43" value="" style="endArrow=none;html=1;" parent="1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="310" y="420" as="sourcePoint"/>
+                        <mxPoint x="330" y="420" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="47" value="" style="shape=partialRectangle;whiteSpace=wrap;html=1;bottom=1;right=1;left=1;top=0;fillColor=none;routingCenterX=-0.5;rotation=90;" parent="1" vertex="1">
+                    <mxGeometry x="539" y="285" width="80" height="20" as="geometry"/>
+                </mxCell>
+                <mxCell id="48" value="" style="endArrow=none;html=1;" parent="1" edge="1">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="550" y="294.5" as="sourcePoint"/>
+                        <mxPoint x="570" y="294.5" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+            </root>
+        </mxGraphModel>
+    </diagram>
+</mxfile>
