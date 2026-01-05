@@ -5,7 +5,7 @@ Meeting Record
 プロジェクト・タスク・習慣を登録し、カレンダー上で管理ができる
 
 <h1>URL</h1>
-meeting-record-theta.vercel.app
+https://meeting-record-theta.vercel.app/
 
 <h1>テスト用アカウント</h1>
 <br>・メールアドレス :test@test.com</br>
